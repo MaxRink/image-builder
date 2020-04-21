@@ -74,9 +74,8 @@
       "output_directory": "{{user `output_dir`}}",
       "type": "vmware-iso",
       "version": "{{user `vmx_version`}}",
-      "cpus": 1,
-      "cores": 1,
-      "memory": 2048,
+      "cpus": 2,
+      "memory": 4096,
       "disk_size": 20480,
       "disk_type_id": "{{user `disk_type_id`}}",
       "disk_adapter_type": "scsi",
@@ -129,13 +128,12 @@
       "cluster": "{{user `cluster`}}",
       "network": "{{user `network`}}",
 
-      "notes" : "Builddate: {{isotime \"2006-01-02T15:04\"}} build_name: {{user `build_name`}}, build_timestamp:{{user `build_timestamp`}} containerd_version: {{user `containerd_version`}} guest_os_type: {{user `guest_os_type`}} vsphere_guest_os_type: {{user `vsphere_guest_os_type`}} kubernetes_cni_semver: {{user `kubernetes_cni_semver`}} kubernetes_semver: {{user `kubernetes_semver`}} kubernetes_source_type: {{user `kubernetes_source_type`}} os_name: {{user `os_display_name`}}",
+      "notes" : "Builddate: {{isotime \"2006-01-02T15:04\"}},  containerd_version: {{user `containerd_version`}} vsphere_guest_os_type: {{user `vsphere_guest_os_type`}} kubernetes_cni_semver: {{user `kubernetes_cni_semver`}} kubernetes_semver: {{user `kubernetes_semver`}} kubernetes_source_type: {{user `kubernetes_source_type`}}  vm_version: {{user `vmx_version`}}",
 
 
       "vm_version": "{{user `vmx_version`}}",
-      "CPUs": 1,
-      "cpu_cores": 1,
-      "RAM": 2048,
+      "CPUs": 2,
+      "RAM": 4096,
       "disk_size": 20480,
       "disk_controller_type": "{{user `disk_controller_type`}}",
       "disk_thin_provisioned": "{{user `disk_thin_provisioned`}}",
