@@ -1,0 +1,6 @@
+- name: install baseline dependencies
+  yum:
+    name: "{{ telekom_rpms }}"
+    state: present
+    lock_timeout: 60
+

@@ -1,0 +1,6 @@
+- name: install baseline dependencies
+  apt:
+    force_apt_get: True
+    name: "{{ telekom_debs }}"
+    state: latest
+
