@@ -129,7 +129,7 @@
       "cluster": "{{user `cluster`}}",
       "network": "{{user `network`}}",
 
-      "notes" : "Builddate: {{isotime \"2006-01-02T15:04\"}} Ansible-Args: {{user `ansible_common_vars`}} {{user `ansible_extra_vars`}}",
+      "notes" : "Builddate: {{isotime \"2006-01-02T15:04\"}} build_name: {{user `build_name`}}, build_timestamp:{{user `build_timestamp`}} containerd_version: {{user `containerd_version`}} guest_os_type: {{user `guest_os_type`}} vsphere_guest_os_type: {{user `vsphere_guest_os_type`}} kubernetes_cni_semver: {{user `kubernetes_cni_semver`}} kubernetes_semver: {{user `kubernetes_semver`}} kubernetes_source_type: {{user `kubernetes_source_type`}} os_name: {{user `os_display_name`}}",
 
 
       "vm_version": "{{user `vmx_version`}}",
