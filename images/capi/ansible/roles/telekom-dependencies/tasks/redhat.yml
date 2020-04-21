@@ -4,11 +4,11 @@
     state: present
     lock_timeout: 60
 
-- name: install baseline dependencies
+- name: remove unneeded packages
   yum:
     name: "{{ telekom_remove_rpms }}"
     state: absent
     lock_timeout: 60
     autoremove: yes
-    
+
 

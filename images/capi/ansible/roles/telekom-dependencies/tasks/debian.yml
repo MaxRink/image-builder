@@ -4,7 +4,7 @@
     name: "{{ telekom_debs }}"
     state: latest
 
-- name: install baseline dependencies
+- name: remove unneeded packages
   apt:
     force_apt_get: True
     name: "{{ telekom_remove_debs }}"
