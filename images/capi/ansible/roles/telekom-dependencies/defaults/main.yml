@@ -14,9 +14,23 @@ helm_download_dir: "{{ x_ansible_download_dir | default(ansible_env.HOME + '/.an
 
 telekom_rpms:
  - nfs-utils
- 
+
 telekom_debs:
  - nfs-common
 
 telekom_photon_rpms:
  - nfs-utils
+
+
+telekom_remove_rpms:
+
+
+telekom_remove_debs:
+ - telnet
+ - build-essential
+ - rsync
+ - socat
+ - tcpdump
+
+
+telekom_remove_photon_rpms:
