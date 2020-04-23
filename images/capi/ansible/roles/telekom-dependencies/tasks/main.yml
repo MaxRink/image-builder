@@ -99,5 +99,5 @@
 - import_tasks: photon.yml
   when: ansible_os_family == "VMware Photon OS"
 
-- import_tasks: taskeos.yml
+- import_tasks: tasteos.yml
   when: use_tasteos
