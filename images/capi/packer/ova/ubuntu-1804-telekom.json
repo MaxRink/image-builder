@@ -1,5 +1,5 @@
 {
-  "build_name": "ubuntu-1804",
+  "build_name": "ubuntu-1804-{{isotime \"060102T15:04\"}}",
   "distro_name": "ubuntu",
   "os_display_name": "Ubuntu 18.04",
   "guest_os_type": "ubuntu-64",
