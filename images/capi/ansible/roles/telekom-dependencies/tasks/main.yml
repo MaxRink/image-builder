@@ -90,6 +90,11 @@
     owner: root
     group: root
 
+- name: Copy in containerd config overrides
+  template:
+    dest: /etc/containerd/config.toml
+    src: etc/containerd/config.toml
+
 - import_tasks: debian.yml
   when: ansible_os_family == "Debian"
 

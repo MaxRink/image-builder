@@ -9,7 +9,6 @@
   "iso_checksum_type": "sha256",
   "boot_command_prefix": "<esc><wait><esc><wait><enter><wait>/install/vmlinuz auto console-setup/ask_detect=false console-setup/layoutcode=de console-setup/modelcode=pc105 debconf/frontend=noninteractive pkgsel/install-language-support=true localechooser/translation/warn-light=true pkgsel/ignore-incomplete-language-support=true debian-installer=de_DE fb=false initrd=/install/initrd.gz kbd-chooser/method=de keyboard-configuration/layout=German keyboard-configuration/variant=German locale=de_DE netcfg/get_domain=local netcfg/get_hostname=localhost grub-installer/bootdev=/dev/sda preseed/url=",
   "boot_command_suffix": "/18.04-telekom/preseed.cfg -- <wait><enter><wait>",
-  "shutdown_command": "shutdown -P now",
-  "containerd_additional_settings": "W3BsdWdpbnMuY3JpLnJlZ2lzdHJ5Lm1pcnJvcnNdCiAgW3BsdWdpbnMuY3JpLnJlZ2lzdHJ5Lm1pcnJvcnMuIioiXQogICAgZW5kcG9pbnQgPSBbImh0dHBzOi8vaGFyYm9yLnNjZS1kY24ubmV0L3N5c3RlbSxodHRwczovL2hhcmJvci5zY2UtZGNuLm5ldC9zeXN0ZW0vLGh0dHBzOi8vaGFyYm9yLmJyZW1lbi5kYXMtc2NoaWZmLnRlbGVrb20uZGUvc3lzdGVtLGh0dHBzOi8vaGFyYm9yLmJyZW1lbi5kYXMtc2NoaWZmLnRlbGVrb20uZGUvc3lzdGVtLyxodHRwczovL2hhcmJvci5kYXMtc2NoaWZmLnRlbGVrb20uZGUvc3lzdGVtLGh0dHBzOi8vaGFyYm9yLmRhcy1zY2hpZmYudGVsZWtvbS5kZS9zeXN0ZW0vIl0KICBbcGx1Z2lucy5jcmkucmVnaXN0cnkubWlycm9ycy4iZG9ja2VyLmVsYXN0aWMuY28iXQogICAgZW5kcG9pbnQgPSBbImh0dHBzOi8vaGFyYm9yLnNjZS1kY24ubmV0L2VsYXN0aWMsaHR0cHM6Ly9oYXJib3Iuc2NlLWRjbi5uZXQvZWxhc3RpYy8saHR0cHM6Ly9oYXJib3IuYnJlbWVuLmRhcy1zY2hpZmYudGVsZWtvbS5kZS9lbGFzdGljLGh0dHBzOi8vaGFyYm9yLmJyZW1lbi5kYXMtc2NoaWZmLnRlbGVrb20uZGUvZWxhc3RpYy8saHR0cHM6Ly9oYXJib3IuZGFzLXNjaGlmZi50ZWxla29tLmRlL2VsYXN0aWMsaHR0cHM6Ly9oYXJib3IuZGFzLXNjaGlmZi50ZWxla29tLmRlL2VsYXN0aWMvIl0="
+  "shutdown_command": "shutdown -P now"
 }
 
