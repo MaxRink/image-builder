@@ -18,7 +18,7 @@
     name: "{{ item }}"
     state: stopped
     enabled: false
-  loop: telekom_disable_systemd_services
+  loop: "{{ telekom_disable_systemd_services }}"
 
 - name: Gather the package package facts
   package_facts:
