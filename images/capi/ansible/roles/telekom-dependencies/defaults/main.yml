@@ -19,7 +19,6 @@ telekom_rpms:
 telekom_debs:
  - nfs-common
  - python-apt
- 
 
 telekom_photon_rpms:
  - nfs-utils
@@ -29,6 +28,7 @@ telekom_remove_rpms:
 
 
 telekom_remove_debs:
+ - hyperv-daemons
 
 
 
