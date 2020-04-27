@@ -1,4 +1,8 @@
 ---
+- name: Print packer_builder_type
+  debug:
+    var: packer_builder_type
+
 - name: Print facts
   debug:
     var: ansible_facts
