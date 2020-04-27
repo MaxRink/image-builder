@@ -12,3 +12,12 @@
     autoremove: yes
     autoclean: yes
     purge: yes
+
+- name: Gather the package package facts
+  package_facts:
+    manager: auto
+
+- name: Print the package package facts
+  debug:
+    var: ansible_facts.packages
+    

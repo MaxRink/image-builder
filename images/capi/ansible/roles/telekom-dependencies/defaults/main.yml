@@ -18,6 +18,9 @@ telekom_rpms:
 
 telekom_debs:
  - nfs-common
+ - cloud-init
+ - cloud-guest-utils
+ 
 
 telekom_photon_rpms:
  - nfs-utils
@@ -28,7 +31,6 @@ telekom_remove_rpms:
 
 telekom_remove_debs:
  - telnet
- - build-essential
  - rsync
  - socat
  - tcpdump
