@@ -18,8 +18,7 @@ telekom_rpms:
 
 telekom_debs:
  - nfs-common
- - cloud-init
- - cloud-guest-utils
+ - python-apt
  
 
 telekom_photon_rpms:
@@ -30,10 +29,7 @@ telekom_remove_rpms:
 
 
 telekom_remove_debs:
- - telnet
- - rsync
- - socat
- - tcpdump
+
 
 
 telekom_remove_photon_rpms:

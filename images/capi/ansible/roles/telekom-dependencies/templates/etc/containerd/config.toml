@@ -6,8 +6,8 @@ version = 2
   [plugins."io.containerd.grpc.v1.cri"]
     sandbox_image = "{{ containerd_pause_image }}"
       
-  [plugins.cri.registry.mirrors]
-    [plugins.cri.registry.mirrors."*"]
-      endpoint = ["https://harbor.sce-dcn.net/system,https://harbor.sce-dcn.net/system/,https://harbor.bremen.das-schiff.telekom.de/system,https://harbor.bremen.das-schiff.telekom.de/system/,https://harbor.das-schiff.telekom.de/system,https://harbor.das-schiff.telekom.de/system/"]
-    [plugins.cri.registry.mirrors."docker.elastic.co"]
-      endpoint = ["https://harbor.sce-dcn.net/elastic,https://harbor.sce-dcn.net/elastic/,https://harbor.bremen.das-schiff.telekom.de/elastic,https://harbor.bremen.das-schiff.telekom.de/elastic/,https://harbor.das-schiff.telekom.de/elastic,https://harbor.das-schiff.telekom.de/elastic/"]
+[plugins.cri.registry.mirrors]
+  [plugins.cri.registry.mirrors."*"]
+    endpoint = ["https://harbor.sce-dcn.net/system,https://harbor.sce-dcn.net/system/,https://harbor.bremen.das-schiff.telekom.de/system,https://harbor.bremen.das-schiff.telekom.de/system/,https://harbor.das-schiff.telekom.de/system,https://harbor.das-schiff.telekom.de/system/"]
+  [plugins.cri.registry.mirrors."docker.elastic.co"]
+    endpoint = ["https://harbor.sce-dcn.net/elastic,https://harbor.sce-dcn.net/elastic/,https://harbor.bremen.das-schiff.telekom.de/elastic,https://harbor.bremen.das-schiff.telekom.de/elastic/,https://harbor.das-schiff.telekom.de/elastic,https://harbor.das-schiff.telekom.de/elastic/"]

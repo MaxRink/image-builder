@@ -15,9 +15,13 @@
 
 - name: Gather the package package facts
   package_facts:
-    manager: auto
+    manager: apt
+  register: installed_debs
 
 - name: Print the package package facts
   debug:
     var: ansible_facts.packages
-    
+
+- name: Print the package package facts
+  debug:
+    var: installed_debs
