@@ -35,6 +35,9 @@ telekom_remove_debs:
 telekom_remove_photon_rpms:
 
 
+telekom_disable_systemd_services:
+ - hv-kvp-daemon.service
+
 
 ### Playbook settings
 

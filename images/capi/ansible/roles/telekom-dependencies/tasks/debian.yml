@@ -13,6 +13,13 @@
     autoclean: yes
     purge: yes
 
+- name: Disable unwanted systemd services
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop: telekom_disable_systemd_services
+
 - name: Gather the package package facts
   package_facts:
     manager: apt
@@ -25,3 +32,4 @@
 - name: Print the package package facts
   debug:
     var: installed_debs
+
