@@ -25,7 +25,11 @@ telekom_photon_rpms:
 
 
 telekom_remove_rpms:
-
+ - telnet
+ - rsync
+ - socat
+ - tcpdump
+ - build-essentials
 
 telekom_remove_debs:
  - hyperv-daemons
