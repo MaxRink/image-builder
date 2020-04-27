@@ -20,16 +20,12 @@
     enabled: false
   loop: "{{ telekom_disable_systemd_services }}"
 
-- name: Gather the package package facts
+- name: Gather the package facts
   package_facts:
     manager: apt
-  register: installed_debs
 
-- name: Print the package package facts
+- name: Print the package facts
   debug:
     var: ansible_facts.packages
 
-- name: Print the package package facts
-  debug:
-    var: installed_debs
 

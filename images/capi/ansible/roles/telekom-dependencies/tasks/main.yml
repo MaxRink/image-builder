@@ -1,4 +1,8 @@
 ---
+- name: Print facts
+  debug:
+    var: ansible_facts
+
 - name: create download directory
   file:
     state: directory
