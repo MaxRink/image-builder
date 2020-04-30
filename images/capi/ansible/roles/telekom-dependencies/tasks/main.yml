@@ -98,10 +98,28 @@
     owner: root
     group: root
 
+- name: Copy scripts
+  template:
+    dest: "/{{ item }}"
+    sry: "{{ item }}.j2"
+    owner: root
+    group: root
+    mode: 0700
+  loop:
+    - usr/bin/expand.sh
+
 - name: Copy in containerd config overrides
   template:
-    dest: /etc/containerd/config.toml
-    src: etc/containerd/config.toml
+    dest: "/{{ item }}"
+    src: "{{ item }}.j2"
+  loop:
+    - etc/containerd/config.toml
+    - etc/systemd/system/auto-expand.service
+
+- name: Ensure the unit is enabled for next boot.
+  service:
+    name: auto-expand.service
+    enabled: true
 
 - import_tasks: debian.yml
   when: ansible_os_family == "Debian"
