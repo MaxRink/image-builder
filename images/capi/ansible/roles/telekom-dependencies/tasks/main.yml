@@ -99,7 +99,7 @@
     group: root
 
 - name: Copy scripts
-  template:
+  copy:
     dest: "/{{ item }}"
     src: "{{ item }}.j2"
     owner: root
@@ -107,6 +107,8 @@
     mode: 0700
   loop:
     - usr/bin/expand.sh
+    - etc/systemd/system/auto-expand.service
+
 
 - name: Copy in templates
   template:
@@ -114,7 +116,6 @@
     src: "{{ item }}.j2"
   loop:
     - etc/containerd/config.toml
-    - etc/systemd/system/auto-expand.service
 
 - name: Ensure the unit is enabled for next boot.
   service:
