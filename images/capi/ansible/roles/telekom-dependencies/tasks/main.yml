@@ -108,7 +108,7 @@
   loop:
     - usr/bin/expand.sh
 
-- name: Copy in containerd config overrides
+- name: Copy in templates
   template:
     dest: "/{{ item }}"
     src: "{{ item }}.j2"
