@@ -101,7 +101,7 @@
 - name: Copy scripts
   template:
     dest: "/{{ item }}"
-    sry: "{{ item }}.j2"
+    src: "{{ item }}.j2"
     owner: root
     group: root
     mode: 0700
