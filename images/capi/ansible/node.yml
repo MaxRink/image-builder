@@ -20,6 +20,7 @@
     - role: providers
     - role: containerd
     - role: kubernetes
+    - role: telekom-dependencies
     - role: sysprep
 
   environment:

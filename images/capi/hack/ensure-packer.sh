@@ -18,7 +18,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-_version="1.4.1"
+_version="1.5.5"
+
 
 # Change directories to the parent directory of the one in which this
 # script is located.
