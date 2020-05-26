@@ -9,6 +9,7 @@
   "iso_checksum_type": "sha256",
   "boot_command_prefix": "<esc><wait><esc><wait><enter><wait>/install/vmlinuz auto console-setup/ask_detect=false console-setup/layoutcode=de console-setup/modelcode=pc105 debconf/frontend=noninteractive pkgsel/install-language-support=true localechooser/translation/warn-light=true pkgsel/ignore-incomplete-language-support=true debian-installer=de_DE fb=false initrd=/install/initrd.gz kbd-chooser/method=de keyboard-configuration/layout=German keyboard-configuration/variant=German locale=de_DE netcfg/get_domain=local netcfg/get_hostname=localhost grub-installer/bootdev=/dev/sda preseed/url=",
   "boot_command_suffix": "/18.04-telekom/preseed.cfg -- <wait><enter><wait>",
-  "shutdown_command": "shutdown -P now"
+  "shutdown_command": "shutdown -P now",
+  "custom_role": "telekom-dependencies"
 }
 
