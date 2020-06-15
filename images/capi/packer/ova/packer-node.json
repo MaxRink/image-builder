@@ -49,8 +49,9 @@
       "disk_type_id": "{{user `disk_type_id`}}",
       "disk_adapter_type": "scsi",
       "boot_wait": "{{user `boot_wait`}}",
-      "http_directory": "./packer/ova/linux/{{user `distro_name`}}/http/",
-      "guest_os_type": "{{user `guest_os_type`}}",
+      "floppy_dirs": [
+        "./packer/ova/linux/{{user `distro_name`}}/http/"
+      ],      "guest_os_type": "{{user `guest_os_type`}}",
       "headless": "{{user `headless`}}",
       "iso_url": "{{user `iso_url`}}",
       "iso_checksum": "{{user `iso_checksum`}}",
@@ -61,7 +62,7 @@
       "ssh_timeout": "4h",
       "boot_command": [
         "{{user `boot_command_prefix`}}",
-        "http://{{ .HTTPIP }}:{{ .HTTPPort }}",
+        "/media/HTTP",
         "{{user `boot_command_suffix`}}"
       ],
       "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S -E sh -c 'usermod -L {{user `ssh_username`}} && {{user `shutdown_command`}}'",
@@ -123,7 +124,7 @@
       "ssh_timeout": "4h",
       "boot_command": [
         "{{user `boot_command_prefix`}}",
-        "file=/media/HTTP",
+        "/media/HTTP",
         "{{user `boot_command_suffix`}}"
       ],
       "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S -E sh -c 'usermod -L {{user `ssh_username`}} && {{user `shutdown_command`}}'",
