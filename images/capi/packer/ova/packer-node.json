@@ -110,7 +110,9 @@
       "guest_os_type": "{{user `vsphere_guest_os_type`}}",
 
       "boot_wait": "{{user `boot_wait`}}",
-      "http_directory": "./packer/ova/linux/{{user `distro_name`}}/http/",
+      "floppy_files": [
+        "./packer/ova/linux/{{user `distro_name`}}/http/"
+      ],
       "iso_urls": "{{user `iso_url`}}",
       "iso_checksum": "{{user `iso_checksum`}}",
       "iso_checksum_type": "{{user `iso_checksum_type`}}",
@@ -121,7 +123,7 @@
       "ssh_timeout": "4h",
       "boot_command": [
         "{{user `boot_command_prefix`}}",
-        "http://{{ .HTTPIP }}:{{ .HTTPPort }}",
+        "file=/media",
         "{{user `boot_command_suffix`}}"
       ],
       "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S -E sh -c 'usermod -L {{user `ssh_username`}} && {{user `shutdown_command`}}'",
