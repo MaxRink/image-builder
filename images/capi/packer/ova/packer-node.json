@@ -123,7 +123,7 @@
       "ssh_timeout": "4h",
       "boot_command": [
         "{{user `boot_command_prefix`}}",
-        "file=/media",
+        "file=/media/HTTP",
         "{{user `boot_command_suffix`}}"
       ],
       "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S -E sh -c 'usermod -L {{user `ssh_username`}} && {{user `shutdown_command`}}'",
