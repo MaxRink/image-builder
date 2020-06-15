@@ -149,10 +149,12 @@ QEMU_BUILD_NAMES			?=	qemu-ubuntu-1804
 ## --------------------------------------
 NODE_OVA_LOCAL_BUILD_TARGETS	:= $(addprefix build-,$(NODE_OVA_LOCAL_BUILD_NAMES))
 NODE_OVA_ESX_BUILD_TARGETS	:= $(addprefix build-,$(NODE_OVA_ESX_BUILD_NAMES))
-NODE_OVA_VSPHERE_BUILD_TARGETS	:= $(addprefix build-,$(NODE_OVA_VSPHERE_BUILD_NAMES))
+NODE_OVA_VSPHERE_BUILD_TARGETS	:= $(addsuffix -telekom,$(addprefix build-,$(NODE_OVA_VSPHERE_BUILD_NAMES)))
+NODE_OVA_VSPHERE_BUILD_TARGETS_TELEKOM	:= $(addprefix build-,$(NODE_OVA_VSPHERE_BUILD_NAMES))
 HAPROXY_OVA_LOCAL_BUILD_TARGETS	:= $(addprefix build-,$(HAPROXY_OVA_LOCAL_BUILD_NAMES))
 HAPROXY_OVA_ESX_BUILD_TARGETS	:= $(addprefix build-,$(HAPROXY_OVA_ESX_BUILD_NAMES))
 HAPROXY_OVA_VSPHERE_BUILD_TARGETS	:= $(addprefix build-,$(HAPROXY_OVA_VSPHERE_BUILD_NAMES))
+HAPROXY_OVA_VSPHERE_BUILD_TARGETS_TELEKOM	:= $(addsuffix -telekom,$(addprefix build-,$(HAPROXY_OVA_VSPHERE_BUILD_NAMES)))
 AMI_BUILD_TARGETS	:= $(addprefix build-,$(AMI_BUILD_NAMES))
 GCE_BUILD_TARGETS	:= $(addprefix build-,$(GCE_BUILD_NAMES))
 AZURE_BUILD_TARGETS	:= $(addprefix build-,$(AZURE_BUILD_NAMES))
@@ -171,6 +173,10 @@ $(NODE_OVA_ESX_BUILD_TARGETS):
 $(NODE_OVA_VSPHERE_BUILD_TARGETS):
 	packer build $(PACKER_NODE_FLAGS) -var-file="packer/ova/packer-common.json" -var-file="$(abspath packer/ova/$(subst build-node-ova-vsphere-,,$@).json)" -var-file="packer/ova/vsphere.json" -except=esx -except=local -only=vsphere-iso $(PACKER_VAR_FILES) -only=vsphere packer/ova/packer-node.json
 
+.PHONY: $(NODE_OVA_VSPHERE_BUILD_TARGETS_TELEKOM)
+$(NODE_OVA_VSPHERE_BUILD_TARGETS_TELEKOM):
+	packer build $(PACKER_NODE_FLAGS) -var-file="packer/ova/packer-common.json" -var-file="$(abspath packer/ova/$(subst build-telekom-node-ova-vsphere-,,$@).json)" -var-file="packer/ova/vsphere.json" -except=esx -except=local -only=vsphere-iso $(PACKER_VAR_FILES) -only=vsphere packer/ova/packer-node.json
+
 .PHONY: $(HAPROXY_OVA_LOCAL_BUILD_TARGETS)
 $(HAPROXY_OVA_LOCAL_BUILD_TARGETS):
 	packer build $(PACKER_HAPROXY_FLAGS) -var-file="packer/ova/packer-common.json" -var-file="$(abspath packer/ova/$(subst build-haproxy-ova-local-,,$@).json)" -except=esx -except=vsphere -only=vmware-iso $(PACKER_VAR_FILES) packer/ova/packer-haproxy.json
@@ -182,6 +188,10 @@ $(HAPROXY_OVA_ESX_BUILD_TARGETS):
 .PHONY: $(HAPROXY_OVA_VSPHERE_BUILD_TARGETS)
 $(HAPROXY_OVA_VSPHERE_BUILD_TARGETS):
 	packer build $(PACKER_HAPROXY_FLAGS) -var-file="packer/ova/packer-common.json" -var-file="$(abspath packer/ova/$(subst build-haproxy-ova-vsphere-,,$@).json)" -var-file="packer/ova/vsphere.json" -except=esx -except=local -only=vsphere-iso $(PACKER_VAR_FILES) -only=vsphere packer/ova/packer-haproxy.json
+
+.PHONY: $(HAPROXY_OVA_VSPHERE_BUILD_TARGETS_TELEKOM)
+$(HAPROXY_OVA_VSPHERE_BUILD_TARGETS_TELEKOM):
+	packer build $(PACKER_HAPROXY_FLAGS) -var-file="packer/ova/packer-common.json" -var-file="$(abspath packer/ova/$(subst build-telekom-haproxy-ova-vsphere-,,$@).json)" -var-file="packer/ova/vsphere.json" -except=esx -except=local -only=vsphere-iso $(PACKER_VAR_FILES) -only=vsphere packer/ova/packer-haproxy.json
 
 .PHONY: $(AMI_BUILD_TARGETS)
 $(AMI_BUILD_TARGETS):
@@ -252,6 +262,13 @@ build-node-ova-vsphere-photon-3: ## Builds Photon 3 Node OVA and template on vSp
 build-node-ova-vsphere-ubuntu-1804: ## Builds Ubuntu 18.04 Node OVA and template on vSphere
 build-node-ova-vsphere-ubuntu-2004: ## Builds Ubuntu 20.04 Node OVA and template on vSphere
 build-haproxy-ova-vsphere-photon-3: ## Builds Photon 3 HAProxy OVA and template on vSphere
+
+build-node-ova-vsphere-centos-7-telekom: ## Builds telekom-flavoured CentOS 7 Node OVA and template on vSphere
+build-node-ova-vsphere-photon-3-telekom: ## Builds telekom-flavoured Photon 3 Node OVA and template on vSphere
+build-node-ova-vsphere-ubuntu-1804-telekom: ## Builds telekom-flavoured Ubuntu 18.04 Node OVA and template on vSphere
+build-node-ova-vsphere-ubuntu-2004-telekom: ## Builds telekom-flavoured Ubuntu 20.04 Node OVA and template on vSphere
+build-haproxy-ova-vsphere-photon-3-telekom: ## Builds telekom-flavoured Photon 3 HAProxy OVA and template on vSphere
+
 
 build-qemu-ubuntu-1804: ## Builds Ubuntu 18.04 QEMU image
 
