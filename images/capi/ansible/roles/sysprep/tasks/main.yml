@@ -140,11 +140,23 @@
     pattern: '*'
   register: log_files
 
-- name: Delete log files
+- name: Delete log files 
   file:
     state: absent
     path: "{{ item.path }}"
   loop: "{{ log_files.files }}"
+
+- name: Remove and recreate /var/log and daily log folder.
+  file:
+    state: "{{ item.state }}"
+    path: "{{ item.path }}"
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+  - { path: /var/log, state: absent }
+  - { path: /var/log, state: directory }
+  - { path: /var/log/sa, state: directory }
 
 - name: Create a log directory for kube-apiserver audit logs
   file:
