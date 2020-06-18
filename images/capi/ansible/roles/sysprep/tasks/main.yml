@@ -154,8 +154,6 @@
     group: root
     mode: 0755
   loop:
-  - { path: /var/log, state: absent }
-  - { path: /var/log, state: directory }
   - { path: /var/log/sa, state: directory }
 
 - name: Create a log directory for kube-apiserver audit logs
