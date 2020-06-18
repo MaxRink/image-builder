@@ -149,8 +149,8 @@ QEMU_BUILD_NAMES			?=	qemu-ubuntu-1804
 ## --------------------------------------
 NODE_OVA_LOCAL_BUILD_TARGETS	:= $(addprefix build-,$(NODE_OVA_LOCAL_BUILD_NAMES))
 NODE_OVA_ESX_BUILD_TARGETS	:= $(addprefix build-,$(NODE_OVA_ESX_BUILD_NAMES))
-NODE_OVA_VSPHERE_BUILD_TARGETS	:= $(addsuffix -telekom,$(addprefix build-,$(NODE_OVA_VSPHERE_BUILD_NAMES)))
-NODE_OVA_VSPHERE_BUILD_TARGETS_TELEKOM	:= $(addprefix build-,$(NODE_OVA_VSPHERE_BUILD_NAMES))
+NODE_OVA_VSPHERE_BUILD_TARGETS	:= $(addprefix build-,$(NODE_OVA_VSPHERE_BUILD_NAMES))
+NODE_OVA_VSPHERE_BUILD_TARGETS_TELEKOM	:= $(addsuffix -telekom,$(addprefix build-,$(NODE_OVA_VSPHERE_BUILD_NAMES)))
 HAPROXY_OVA_LOCAL_BUILD_TARGETS	:= $(addprefix build-,$(HAPROXY_OVA_LOCAL_BUILD_NAMES))
 HAPROXY_OVA_ESX_BUILD_TARGETS	:= $(addprefix build-,$(HAPROXY_OVA_ESX_BUILD_NAMES))
 HAPROXY_OVA_VSPHERE_BUILD_TARGETS	:= $(addprefix build-,$(HAPROXY_OVA_VSPHERE_BUILD_NAMES))
@@ -175,7 +175,7 @@ $(NODE_OVA_VSPHERE_BUILD_TARGETS):
 
 .PHONY: $(NODE_OVA_VSPHERE_BUILD_TARGETS_TELEKOM)
 $(NODE_OVA_VSPHERE_BUILD_TARGETS_TELEKOM):
-	packer build $(PACKER_NODE_FLAGS) -var-file="packer/ova/packer-common.json" -var-file="$(abspath packer/ova/$(subst build-telekom-node-ova-vsphere-,,$@).json)" -var-file="packer/ova/vsphere.json" -except=esx -except=local -only=vsphere-iso $(PACKER_VAR_FILES) -only=vsphere packer/ova/packer-node.json
+	packer build $(PACKER_NODE_FLAGS) -var-file="packer/ova/packer-common.json" -var-file="$(abspath packer/ova/$(subst build-node-ova-vsphere-,,$@).json)" -var-file="packer/ova/vsphere.json" -except=esx -except=local -only=vsphere-iso $(PACKER_VAR_FILES) -only=vsphere packer/ova/packer-node.json
 
 .PHONY: $(HAPROXY_OVA_LOCAL_BUILD_TARGETS)
 $(HAPROXY_OVA_LOCAL_BUILD_TARGETS):
@@ -191,7 +191,7 @@ $(HAPROXY_OVA_VSPHERE_BUILD_TARGETS):
 
 .PHONY: $(HAPROXY_OVA_VSPHERE_BUILD_TARGETS_TELEKOM)
 $(HAPROXY_OVA_VSPHERE_BUILD_TARGETS_TELEKOM):
-	packer build $(PACKER_HAPROXY_FLAGS) -var-file="packer/ova/packer-common.json" -var-file="$(abspath packer/ova/$(subst build-telekom-haproxy-ova-vsphere-,,$@).json)" -var-file="packer/ova/vsphere.json" -except=esx -except=local -only=vsphere-iso $(PACKER_VAR_FILES) -only=vsphere packer/ova/packer-haproxy.json
+	packer build $(PACKER_HAPROXY_FLAGS) -var-file="packer/ova/packer-common.json" -var-file="$(abspath packer/ova/$(subst build-haproxy-ova-vsphere-,,$@).json)" -var-file="packer/ova/vsphere.json" -except=esx -except=local -only=vsphere-iso $(PACKER_VAR_FILES) -only=vsphere packer/ova/packer-haproxy.json
 
 .PHONY: $(AMI_BUILD_TARGETS)
 $(AMI_BUILD_TARGETS):
