@@ -1,10 +1,6 @@
 # Building Images for vSphere
 
-## Prerequisites
-
-The `make deps-ova` target will test that Ansible and Packer are installed and available. If they are not, they will be installed to `images/capi/.bin`. This directory will need to be added to your `$PATH`.
-
-### Hypervisor
+## Hypervisor
 
 The images may be built using one of the following hypervisors:
 
@@ -15,15 +11,10 @@ The images may be built using one of the following hypervisors:
 | ESXi | ESXi | build-node-ova-esx-<OS> |
 | vSphere | vSphere >= 6.5 | build-node-ova-vsphere-<OS> |
 
+**NOTE** If you want to build all available OS's, uses the `-all` target. If you want to build them in parallel, use `make -j`. For example, `make -j build-node-ova-local-all`.
 
 The `esxi` builder supports building against a remote VMware ESX server with [specific configuration](https://packer.io/docs/builders/vmware-iso.html#building-on-a-remote-vsphere-hypervisor) (ssh access), but is untested with this project.
 The `vsphere` builder supports building against a remote VMware vSphere using standard API.
-
-
-### Prerequisites for all images
-
-- [Packer](https://www.packer.io/intro/getting-started/install.html) version >= 1.5.5
-- [Ansible](http://docs.ansible.com/ansible/latest/intro_installation.html) version >= 2.8.0
 
 ### Prerequisites for vSphere builder
 
@@ -45,6 +36,13 @@ This file must have the following format (`cluster` can be replace by `host`):
 If you prefer to use a different configuration file, you can create it with the same format and export `PACKER_VAR_FILES` environment variable containing the full path to it.
 
 ## Building Images
+
+The build [prerequisites](../capi.md#prerequisites) for using `image-builder` for
+building OVAs are managed by running:
+
+```bash
+make deps-ova
+```
 
 From the `images/capi` directory, run `make build-node-ova-<hypervisor>-<OS>`, where `<hypervisor>` is your target hypervisor (`local`, `vsphere` or `esx`) and `<OS>` is the desired operating system. The available choices are listed via `make help`.
 
