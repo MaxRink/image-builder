@@ -161,7 +161,7 @@ ABSOLUTE_PACKER_VAR_FILES := $(foreach f,$(abspath $(PACKER_VAR_FILES)),-var-fil
 CENTOS_VERSIONS			:=	centos-7
 PHOTON_VERSIONS			:=	photon-3
 RHEL_VERSIONS				:=	rhel-7
-UBUNTU_VERSIONS			:=	ubuntu-1804 ubuntu-2004
+UBUNTU_VERSIONS			:=	ubuntu-1804 ubuntu-2004 ubuntu-2004-subiquity
 
 PLATFORMS_AND_VERSIONS	:=	$(CENTOS_VERSIONS) \
 							$(PHOTON_VERSIONS) \
@@ -360,6 +360,7 @@ build-node-ova-local-photon-3: ## Builds Photon 3 Node OVA w local hypervisor
 build-node-ova-local-rhel-7: ## Builds RHEL 7 Node OVA w local hypervisor
 build-node-ova-local-ubuntu-1804: ## Builds Ubuntu 18.04 Node OVA w local hypervisor
 build-node-ova-local-ubuntu-2004: ## Builds Ubuntu 20.04 Node OVA w local hypervisor
+build-node-ova-local-ubuntu-2004-subiquity: ## Builds Ubuntu 20.04 Node OVA w local hypervisor with subiquity installer
 build-node-ova-local-all: $(NODE_OVA_LOCAL_BUILD_TARGETS) ## Builds all Node OVAs w local hypervisor
 build-haproxy-ova-local-photon-3: ## Builds Photon 3 HAProxy OVA w local hypervisor
 
@@ -368,6 +369,7 @@ build-node-ova-esx-photon-3: ## Builds Photon 3 Node OVA w remote hypervisor
 build-node-ova-esx-rhel-7: ## Builds RHEL 7 Node OVA w remote hypervisor
 build-node-ova-esx-ubuntu-1804: ## Builds Ubuntu 18.04 Node OVA w remote hypervisor
 build-node-ova-esx-ubuntu-2004: ## Builds Ubuntu 20.04 Node OVA w remote hypervisor
+build-node-ova-esx-ubuntu-2004-subiquity: ## Builds Ubuntu 20.04 Node OVA w remote hypervisor with subiquity installer
 build-node-ova-esx-all: $(NODE_OVA_ESX_BUILD_TARGETS) ## Builds all Node OVAs w remote hypervisor
 build-haproxy-ova-esx-photon-3: ## Builds Photon 3 HAProxy OVA w remote hypervisor
 
@@ -376,6 +378,7 @@ build-node-ova-vsphere-photon-3: ## Builds Photon 3 Node OVA and template on vSp
 build-node-ova-vsphere-rhel-7: ## Builds RHEL 7 Node OVA and template on vSphere
 build-node-ova-vsphere-ubuntu-1804: ## Builds Ubuntu 18.04 Node OVA and template on vSphere
 build-node-ova-vsphere-ubuntu-2004: ## Builds Ubuntu 20.04 Node OVA and template on vSphere
+build-node-ova-vsphere-ubuntu-2004-subiquity: ## Builds Ubuntu 20.04 Node OVA and template with subiquity installer on vSphere
 build-node-ova-vsphere-all: $(NODE_OVA_VSPHERE_BUILD_TARGETS) ## Builds all Node OVAs and templates on vSphere
 build-haproxy-ova-vsphere-photon-3: ## Builds Photon 3 HAProxy OVA and template on vSphere
 
@@ -391,6 +394,7 @@ build-node-ova-vsphere-base-photon-3: ## Builds Photon 3 Node OVA and template o
 build-node-ova-vsphere-base-rhel-7: ## Builds RHEL 7 Node OVA and template on vSphere
 build-node-ova-vsphere-base-ubuntu-1804: ## Builds Ubuntu 18.04 Node OVA and template on vSphere
 build-node-ova-vsphere-base-ubuntu-2004: ## Builds Ubuntu 20.04 Node OVA and template on vSphere
+build-node-ova-vsphere-base-ubuntu-2004-subiquity: ## Builds Ubuntu 20.04 Node OVA and template with subiquity installer on vSphere
 build-node-ova-vsphere-base-all: $(NODE_OVA_VSPHERE_BASE_BUILD_TARGETS) ## Builds all Node OVAs and templates on vSphere
 
 
@@ -405,6 +409,7 @@ build-node-ova-local-base-centos-7: ## Builds Centos 7 Base Node OVA w local hyp
 build-node-ova-local-base-rhel-7: ## Builds RHEL 7 Base Node OVA w local hypervisor
 build-node-ova-local-base-ubuntu-1804: ## Builds Ubuntu 18.04 Base Node OVA w local hypervisor
 build-node-ova-local-base-ubuntu-2004: ## Builds Ubuntu 20.04 Base Node OVA w local hypervisor
+build-node-ova-local-base-ubuntu-2004-subiquity: ## Builds Ubuntu 20.04 Base Node OVA w local hypervisor with subiquity installer
 
 build-qemu-ubuntu-1804: ## Builds Ubuntu 18.04 QEMU image
 build-qemu-ubuntu-2004: ## Builds Ubuntu 20.04 QEMU image

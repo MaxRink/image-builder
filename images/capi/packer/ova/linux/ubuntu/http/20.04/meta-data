@@ -1,0 +1,31 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: en_US
+  keyboard:
+    layout: en
+    variant: us
+  network:
+    network:
+      version: 2
+      ethernets:
+        ens33:
+          dhcp4: true
+  storage:
+    layout:
+      name: lvm
+  identity:
+    hostname: ubuntu
+    username: builder
+    password: $6$pOFtHcrTrT0JO/q$fQE2uT61m82/OkEmgp093mMFGSv58o9xWz4tvj9FXimPQhi.WZQttkXJJ2q6cMq7QZG.RIogl0FyS4K1OSjED1
+  ssh:
+    install-server: yes
+  user-data:
+    disable_root: false
+  late-commands:
+    - echo 'builder ALL=(ALL) NOPASSWD: ALL' >/target/etc/sudoers.d/builder ; \
+    - in-target chmod 440 /etc/sudoers.d/builder ; \
+    - in-target swapoff -a ; \
+    - in-target rm -f /swapfile ; \
+    - in-target sed -ri '/\sswap\s/s/^#?/#/' /etc/fstab ; \
+    - in-target rm -f /etc/udev/rules.d/70-persistent-net.rules
