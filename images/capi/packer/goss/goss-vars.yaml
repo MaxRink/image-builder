@@ -239,8 +239,8 @@ ubuntu:
       cloud-guest-utils:
       cloud-initramfs-copymods:
       cloud-initramfs-dyn-netconf:
-      linux-cloud-tools-generic:
-      linux-tools-generic:
+      linux-cloud-tools-common:
+      linux-tools-common:
 # Windows specific variables
 windows:
   common-windows-features:
