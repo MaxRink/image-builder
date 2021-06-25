@@ -115,6 +115,7 @@ centos:
       python2-pip:
   qemu:
     package:
+      open-vm-tools:
       cloud-init:
       cloud-utils-growpart:
       python2-pip:
@@ -141,6 +142,7 @@ photon:
       python3-netifaces:
   qemu:
     package:
+      open-vm-tools:
       cloud-init:
       cloud-utils:
       python3-netifaces:
@@ -159,6 +161,7 @@ rhel:
       python2-pip:
   qemu:
     package:
+      open-vm-tools:
       cloud-init:
       cloud-utils-growpart:
       python2-pip:
@@ -227,6 +230,7 @@ ubuntu:
     package:
       linux-cloud-tools-virtual:
       linux-tools-virtual:
+      open-vm-tools:
       cloud-guest-utils:
       cloud-initramfs-copymods:
       cloud-initramfs-dyn-netconf:
