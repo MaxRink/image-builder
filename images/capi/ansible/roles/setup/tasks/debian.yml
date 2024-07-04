@@ -91,7 +91,8 @@
   register: apt_lock_status
   until: apt_lock_status is not failed
   retries: 5
-  delay: 10
+  delay: 10  
+  when: debs != ""
 
 - name: Install extra debs
   ansible.builtin.apt:

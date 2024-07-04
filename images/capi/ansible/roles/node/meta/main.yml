@@ -38,7 +38,10 @@ dependencies:
         {{ ( ( common_rpms + rh7_rpms + lookup('vars', 'common_' + build_target + '_rpms') )
           if (ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7')
           else ( common_rpms + rh8_rpms + lookup('vars', 'common_' + build_target + '_rpms') ) ) }}
-      debs: "{{ common_debs +  lookup('vars', 'common_' + build_target + '_debs') }}"
+      debs: >-
+        {{ ( ( common_debs +  lookup('vars', 'common_' + build_target + '_debs') ) 
+          if ( ansible_distribution == 'Ubuntu' and ansible_distribution_version is version_compare('24.04', '>=') )
+          else ( common_debs +  lookup('vars', 'common_' + build_target + '_debs') + ['python3-distutils'] ) ) }}
     when: >
       ansible_distribution not in ["VMware Photon OS", "Amazon"]
         and not (packer_builder_type == "oracle-oci" and ansible_architecture == "aarch64")

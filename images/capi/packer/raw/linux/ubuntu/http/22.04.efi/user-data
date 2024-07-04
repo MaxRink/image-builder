@@ -30,11 +30,6 @@ autoinstall:
   # For more information on how partitioning is configured,
   # please refer to https://curtin.readthedocs.io/en/latest/topics/storage.html.
   storage:
-    swap:
-      size: 0
-    grub:
-      reorder_uefi: false
-      replace_linux_default: false
     config:
     - ptable: gpt
       path: /dev/sda
@@ -85,9 +80,6 @@ autoinstall:
   ssh:
     install-server: true
     allow-pw: true
-  # Customize the list of packages installed.
-  packages:
-    - open-vm-tools
   # Create the default user.
   # Ensures the "builder" user doesn't require a password to use sudo.
   user-data:
@@ -104,14 +96,16 @@ autoinstall:
   # 1. Disables swapfiles
   # 2. Removes the existing swapfile
   # 3. Removes the swapfile entry from /etc/fstab
-  # 4. Removes snapd, https://bugs.launchpad.net/subiquity/+bug/1946609
-  # 5. Cleans up any packages that are no longer required
-  # 6. Removes the cached list of packages
+  # 4. Cleans up any packages that are no longer required
+  # 5. Removes the cached list of packages
   late-commands:
-    - curtin in-target --target=/target -- swapoff -a
-    - curtin in-target --target=/target -- rm -f /swap.img
-    - curtin in-target --target=/target -- sed -ri '/\sswap\s/s/^#?/#/' /etc/fstab
-    - chroot /target apt-get purge -y snapd
-    - curtin in-target --target=/target -- apt-get purge --auto-remove -y
-    - curtin in-target --target=/target -- apt-get clean
-    - curtin in-target --target=/target -- rm -rf /var/lib/apt/lists/*
+    - |
+      if [ -d /sys/firmware/efi ]; then
+        apt-get install -y efibootmgr
+        efibootmgr -o $(efibootmgr | perl -n -e '/Boot(.+)\* ubuntu/ && print $1')
+      fi
+    - swapoff -a
+    - rm -f /swapfile
+    - sed -ri '/\sswap\s/s/^#?/#/' /etc/fstab
+    - apt-get purge --auto-remove -y
+    - rm -rf /var/lib/apt/lists/*
