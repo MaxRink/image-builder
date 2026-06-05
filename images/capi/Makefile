@@ -147,6 +147,11 @@ deps-raw: deps-common
 	$(PACKER) init packer/config.pkr.hcl
 	$(PACKER) init packer/raw/config.pkr.hcl
 
+.PHONY: deps-raw-sysext
+deps-raw-sysext: ## Installs/checks dependencies for systemd-sysext RAW builds
+deps-raw-sysext: deps-raw
+	hack/ensure-jq.sh
+
 .PHONY: deps-sysext
 deps-sysext: ## Checks dependencies for systemd-sysext layer builds
 	hack/ensure-sysext-tools.sh
@@ -448,6 +453,8 @@ QEMU_KUBEVIRT_BUILD_NAMES	:= $(addprefix kubevirt-,$(QEMU_BUILD_NAMES))
 
 RAW_BUILD_NAMES				?=	raw-ubuntu-2204 raw-ubuntu-2204-efi raw-ubuntu-2404 raw-ubuntu-2404-efi raw-ubuntu-2604 raw-ubuntu-2604-efi raw-flatcar raw-rhel-9 raw-rhel-9-efi
 RAW_SYSEXT_BUILD_NAMES			?=	raw-ubuntu-2404-sysext
+RAW_SYSEXT_PACKER_FILE			?=	packer/raw/packer-sysext.json
+RAW_SYSEXT_PROVISIONER_TIMEOUT		?=	90m
 
 SYSEXT_COMPONENTS			?=	kubernetes containerd cni
 SYSEXT_VERSION				?=	dev
@@ -509,6 +516,7 @@ QEMU_KUBEVIRT_VALIDATE_TARGETS := $(addprefix validate-,$(QEMU_KUBEVIRT_BUILD_NA
 RAW_BUILD_TARGETS      := $(addprefix build-,$(RAW_BUILD_NAMES))
 RAW_SYSEXT_BUILD_TARGETS      := $(addprefix build-,$(RAW_SYSEXT_BUILD_NAMES))
 RAW_VALIDATE_TARGETS   := $(addprefix validate-,$(RAW_BUILD_NAMES))
+RAW_SYSEXT_VALIDATE_TARGETS   := $(addprefix validate-,$(RAW_SYSEXT_BUILD_NAMES))
 OCI_BUILD_TARGETS	:= $(addprefix build-,$(OCI_BUILD_NAMES))
 OCI_VALIDATE_TARGETS	:= $(addprefix validate-,$(OCI_BUILD_NAMES))
 OSC_BUILD_TARGETS 	:= $(addprefix build-,$(OSC_BUILD_NAMES))
@@ -685,12 +693,18 @@ $(RAW_BUILD_TARGETS): deps-raw set-ssh-password
 	$(PACKER) build $(PACKER_NODE_FLAGS) -var-file="$(abspath packer/raw/$(subst build-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/raw/packer.json
 
 .PHONY: $(RAW_SYSEXT_BUILD_TARGETS)
-$(RAW_SYSEXT_BUILD_TARGETS): deps-raw set-ssh-password
-	$(PACKER) build $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var-file="$(abspath packer/raw/$(subst build-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/raw/packer.json
+$(RAW_SYSEXT_BUILD_TARGETS): deps-raw-sysext set-ssh-password
+	jq --arg timeout "$(RAW_SYSEXT_PROVISIONER_TIMEOUT)" '(.provisioners[] | select(.type == "ansible") | .timeout) = $$timeout' packer/raw/packer.json > "$(RAW_SYSEXT_PACKER_FILE)"
+	$(PACKER) build $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var-file="$(abspath packer/raw/$(subst build-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) "$(RAW_SYSEXT_PACKER_FILE)"
 
 .PHONY: $(RAW_VALIDATE_TARGETS)
 $(RAW_VALIDATE_TARGETS): deps-raw set-ssh-password
 	$(PACKER) validate $(PACKER_NODE_FLAGS) -var-file="$(abspath packer/raw/$(subst validate-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/raw/packer.json
+
+.PHONY: $(RAW_SYSEXT_VALIDATE_TARGETS)
+$(RAW_SYSEXT_VALIDATE_TARGETS): deps-raw-sysext set-ssh-password
+	jq --arg timeout "$(RAW_SYSEXT_PROVISIONER_TIMEOUT)" '(.provisioners[] | select(.type == "ansible") | .timeout) = $$timeout' packer/raw/packer.json > "$(RAW_SYSEXT_PACKER_FILE)"
+	$(PACKER) validate $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var-file="$(abspath packer/raw/$(subst validate-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) "$(RAW_SYSEXT_PACKER_FILE)"
 
 .PHONY: $(SYSEXT_BUILD_TARGETS)
 $(SYSEXT_BUILD_TARGETS): deps-sysext
@@ -955,6 +969,7 @@ build-raw-ubuntu-2204: ## Builds Ubuntu 22.04 RAW image
 build-raw-ubuntu-2204-efi: ## Builds Ubuntu 22.04 RAW image that EFI boots
 build-raw-ubuntu-2404: ## Builds Ubuntu 24.04 RAW image
 build-raw-ubuntu-2404-efi: ## Builds Ubuntu 24.04 RAW image that EFI boots
+build-raw-ubuntu-2404-sysext: ## Builds Ubuntu 24.04 RAW image with optional systemd-sysext support
 build-raw-ubuntu-2604: ## Builds Ubuntu 26.04 RAW image
 build-raw-ubuntu-2604-efi: ## Builds Ubuntu 26.04 RAW image that EFI boots
 build-raw-rhel-9: ## Builds RHEL 9 RAW image
