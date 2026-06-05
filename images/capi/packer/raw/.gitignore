@@ -1,4 +1,5 @@
 packer.json
+packer-sysext.json
 ks.cfg
 ks-efi.cfg
 preseed.cfg
