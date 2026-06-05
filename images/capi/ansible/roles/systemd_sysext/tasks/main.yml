@@ -28,5 +28,6 @@
     enabled: true
     daemon_reload: true
   when:
+    - systemd_sysext_enable_service | bool
     - ansible_service_mgr == "systemd"
     - ansible_virtualization_type != "docker"
