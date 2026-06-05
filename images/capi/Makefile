@@ -126,6 +126,7 @@ deps-qemu: deps-common
 deps-raw: ## Installs/checks dependencies for RAW builds
 deps-raw: deps-common
 	$(PACKER) init packer/config.pkr.hcl
+	$(PACKER) init packer/raw/config.pkr.hcl
 
 .PHONY: deps-sysext
 deps-sysext: ## Checks dependencies for systemd-sysext layer builds
