@@ -1,4 +1,9 @@
 ---
+- name: Derive systemd-sysext host facts
+  ansible.builtin.set_fact:
+    systemd_sysext_service_manager: "{{ ansible_service_mgr | default(ansible_facts.service_mgr | default('')) }}"
+    systemd_sysext_virtualization_type: "{{ ansible_virtualization_type | default(ansible_facts.virtualization_type | default('')) }}"
+
 - name: Check systemd-sysext availability
   ansible.builtin.command: systemd-sysext --version
   register: systemd_sysext_version_check
@@ -7,8 +12,8 @@
     - systemd_sysext_required | bool
     - systemd_sysext_version_check.rc != 0
   when:
-    - ansible_service_mgr == "systemd"
-    - ansible_virtualization_type != "docker"
+    - systemd_sysext_service_manager == "systemd"
+    - systemd_sysext_virtualization_type != "docker"
 
 - name: Create system extension directories
   ansible.builtin.file:
@@ -19,8 +24,8 @@
     mode: "0755"
   loop: "{{ systemd_sysext_directories }}"
   when:
-    - ansible_service_mgr == "systemd"
-    - ansible_virtualization_type != "docker"
+    - systemd_sysext_service_manager == "systemd"
+    - systemd_sysext_virtualization_type != "docker"
 
 - name: Enable systemd-sysext at boot
   ansible.builtin.systemd:
@@ -29,5 +34,5 @@
     daemon_reload: true
   when:
     - systemd_sysext_enable_service | bool
-    - ansible_service_mgr == "systemd"
-    - ansible_virtualization_type != "docker"
+    - systemd_sysext_service_manager == "systemd"
+    - systemd_sysext_virtualization_type != "docker"
