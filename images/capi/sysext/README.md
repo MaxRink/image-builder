@@ -6,6 +6,11 @@ base images that enable `systemd-sysext.service` and expect Kubernetes,
 containerd, CNI, or other payloads to be supplied as extension images at
 bootstrap time.
 
+For a raw image that preloads sysext images on disk but keeps them inactive,
+pass `systemd_sysext_enable_service=false` through `ansible_user_vars` and keep
+all `.raw` files outside `/etc/extensions`, `/run/extensions`, and
+`/var/lib/extensions`.
+
 System extension images are limited to `/usr` and `/opt`. Configuration,
 mutable state, service enablement, kernel/firmware content, and bootloader
 changes must stay in the base image, bootstrap data, or a future
