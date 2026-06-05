@@ -120,7 +120,7 @@
         "--scp-extra-args",
         "{{user `ansible_scp_extra_args`}}"
       ],
-      "playbook_file": "./ansible/node.yml",
+      "playbook_file": "{{user `node_playbook_file`}}",
       "type": "ansible",
       "user": "builder"
     },
@@ -221,6 +221,7 @@
     "machine_id_mode": "444",
     "machine_type": "pc",
     "memory": "2048",
+    "node_playbook_file": "./ansible/node.yml",
     "oem_id": "",
     "output_directory": "./output/{{user `build_name`}}-kube-{{user `kubernetes_semver`}}",
     "python_path": "",

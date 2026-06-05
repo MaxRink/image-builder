@@ -1,0 +1,32 @@
+---
+- name: Check systemd-sysext availability
+  ansible.builtin.command: systemd-sysext --version
+  register: systemd_sysext_version_check
+  changed_when: false
+  failed_when:
+    - systemd_sysext_required | bool
+    - systemd_sysext_version_check.rc != 0
+  when:
+    - ansible_service_mgr == "systemd"
+    - ansible_virtualization_type != "docker"
+
+- name: Create system extension directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop: "{{ systemd_sysext_directories }}"
+  when:
+    - ansible_service_mgr == "systemd"
+    - ansible_virtualization_type != "docker"
+
+- name: Enable systemd-sysext at boot
+  ansible.builtin.systemd:
+    name: "{{ systemd_sysext_service_name }}"
+    enabled: true
+    daemon_reload: true
+  when:
+    - ansible_service_mgr == "systemd"
+    - ansible_virtualization_type != "docker"

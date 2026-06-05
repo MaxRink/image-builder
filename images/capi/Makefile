@@ -127,6 +127,10 @@ deps-raw: ## Installs/checks dependencies for RAW builds
 deps-raw: deps-common
 	$(PACKER) init packer/config.pkr.hcl
 
+.PHONY: deps-sysext
+deps-sysext: ## Checks dependencies for systemd-sysext layer builds
+	hack/ensure-sysext-tools.sh
+
 .PHONY: deps-oci
 deps-oci: ## Installs/checks dependencies for OCI builds
 deps-oci: deps-common
@@ -387,14 +391,25 @@ OCI_BUILD_NAMES				?= oci-ubuntu-2204 oci-oracle-linux-9 oci-windows-2019 oci-wi
 DO_BUILD_NAMES 				?=	do-ubuntu-2204 do-ubuntu-2404 do-ubuntu-2604
 
 OPENSTACK_BUILD_NAMES		?=	openstack-ubuntu-2204 openstack-ubuntu-2404 openstack-ubuntu-2604 openstack-flatcar openstack-rockylinux-9
+OPENSTACK_SYSEXT_BUILD_NAMES	?=	openstack-ubuntu-2404-sysext
 
 OSC_BUILD_NAMES 			?=	osc-ubuntu-2204 osc-ubuntu-2404 osc-ubuntu-2604
 
 QEMU_BUILD_NAMES			?=	qemu-ubuntu-2204 qemu-ubuntu-2204-cloudimg qemu-ubuntu-2404 qemu-ubuntu-2404-efi qemu-ubuntu-2604 qemu-ubuntu-2604-efi qemu-ubuntu-2204-efi qemu-centos-9 qemu-rhel-9 qemu-rockylinux-9 qemu-rockylinux-9-cloudimg qemu-flatcar
+QEMU_SYSEXT_BUILD_NAMES			?=	qemu-ubuntu-2404-sysext
 
 QEMU_KUBEVIRT_BUILD_NAMES	:= $(addprefix kubevirt-,$(QEMU_BUILD_NAMES))
 
 RAW_BUILD_NAMES				?=	raw-ubuntu-2204 raw-ubuntu-2204-efi raw-ubuntu-2404 raw-ubuntu-2404-efi raw-ubuntu-2604 raw-ubuntu-2604-efi raw-flatcar raw-rhel-9 raw-rhel-9-efi
+RAW_SYSEXT_BUILD_NAMES			?=	raw-ubuntu-2404-sysext
+
+SYSEXT_COMPONENTS			?=	kubernetes containerd cni
+SYSEXT_VERSION				?=	dev
+SYSEXT_OS_ID				?=	ubuntu
+SYSEXT_OS_VERSION			?=	24.04
+SYSEXT_ARCH				?=	$(shell uname -m)
+SYSEXT_OUTPUT_DIR			?=	out/sysext
+SYSEXT_LAYER_ROOTFS			?=	sysext/templates/basic-layer/rootfs
 
 POWERVS_BUILD_NAMES         ?= powervs-centos-9 powervs-centos-10
 
@@ -434,14 +449,17 @@ AZURE_VALIDATE_SIG_CVM_TARGETS	:= $(addprefix validate-,$(AZURE_BUILD_SIG_CVM_NA
 DO_BUILD_TARGETS 	:= $(addprefix build-,$(DO_BUILD_NAMES))
 DO_VALIDATE_TARGETS 	:= $(addprefix validate-,$(DO_BUILD_NAMES))
 OPENSTACK_BUILD_TARGETS	:= $(addprefix build-,$(OPENSTACK_BUILD_NAMES))
+OPENSTACK_SYSEXT_BUILD_TARGETS	:= $(addprefix build-,$(OPENSTACK_SYSEXT_BUILD_NAMES))
 HUAWEICLOUD_BUILD_TARGETS 	:= $(addprefix build-,$(HUAWEICLOUD_BUILD_NAMES))
 HUAWEICLOUD_VALIDATE_TARGETS	:= $(addprefix validate-,$(HUAWEICLOUD_BUILD_NAMES))
 OPENSTACK_VALIDATE_TARGETS := $(addprefix validate-,$(OPENSTACK_BUILD_NAMES))
 QEMU_BUILD_TARGETS	:= $(addprefix build-,$(QEMU_BUILD_NAMES))
+QEMU_SYSEXT_BUILD_TARGETS	:= $(addprefix build-,$(QEMU_SYSEXT_BUILD_NAMES))
 QEMU_VALIDATE_TARGETS	:= $(addprefix validate-,$(QEMU_BUILD_NAMES))
 QEMU_KUBEVIRT_BUILD_TARGETS := $(addprefix build-,$(QEMU_KUBEVIRT_BUILD_NAMES))
 QEMU_KUBEVIRT_VALIDATE_TARGETS := $(addprefix validate-,$(QEMU_KUBEVIRT_BUILD_NAMES))
 RAW_BUILD_TARGETS      := $(addprefix build-,$(RAW_BUILD_NAMES))
+RAW_SYSEXT_BUILD_TARGETS      := $(addprefix build-,$(RAW_SYSEXT_BUILD_NAMES))
 RAW_VALIDATE_TARGETS   := $(addprefix validate-,$(RAW_BUILD_NAMES))
 OCI_BUILD_TARGETS	:= $(addprefix build-,$(OCI_BUILD_NAMES))
 OCI_VALIDATE_TARGETS	:= $(addprefix validate-,$(OCI_BUILD_NAMES))
@@ -463,6 +481,7 @@ MAAS_ARM64_BUILD_TARGETS 	:= $(addprefix build-,$(MAAS_ARM64_BUILD_NAMES))
 MAAS_ARM64_VALIDATE_TARGETS 	:= $(addprefix validate-,$(MAAS_ARM64_BUILD_NAMES))
 SCALEWAY_BUILD_TARGETS		:= $(addprefix build-,$(SCALEWAY_BUILD_NAMES))
 SCALEWAY_VALIDATE_TARGETS	:= $(addprefix validate-,$(SCALEWAY_BUILD_NAMES))
+SYSEXT_BUILD_TARGETS	:= $(addprefix build-sysext-,$(SYSEXT_COMPONENTS))
 
 .PHONY: $(NODE_OVA_LOCAL_BUILD_TARGETS)
 $(NODE_OVA_LOCAL_BUILD_TARGETS): deps-ova set-ssh-password
@@ -558,6 +577,10 @@ $(HUAWEICLOUD_VALIDATE_TARGETS): deps-huaweicloud
 $(OPENSTACK_BUILD_TARGETS): deps-openstack
 	packer build $(PACKER_NODE_FLAGS) -var-file="$(abspath packer/openstack/$(subst build-openstack-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/openstack/packer.json
 
+.PHONY: $(OPENSTACK_SYSEXT_BUILD_TARGETS)
+$(OPENSTACK_SYSEXT_BUILD_TARGETS): deps-openstack
+	packer build $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var-file="$(abspath packer/openstack/$(subst build-openstack-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/openstack/packer.json
+
 .PHONY: $(OPENSTACK_VALIDATE_TARGETS)
 $(OPENSTACK_VALIDATE_TARGETS): deps-openstack
 	packer validate $(PACKER_NODE_FLAGS) -var-file="$(abspath packer/openstack/$(subst validate-openstack-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/openstack/packer.json
@@ -565,6 +588,10 @@ $(OPENSTACK_VALIDATE_TARGETS): deps-openstack
 .PHONY: $(QEMU_BUILD_TARGETS)
 $(QEMU_BUILD_TARGETS): deps-qemu set-ssh-password
 	$(PACKER) build $(PACKER_NODE_FLAGS) -var-file="$(abspath packer/qemu/$(subst build-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/qemu/packer.json
+
+.PHONY: $(QEMU_SYSEXT_BUILD_TARGETS)
+$(QEMU_SYSEXT_BUILD_TARGETS): deps-qemu set-ssh-password
+	$(PACKER) build $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var-file="$(abspath packer/qemu/$(subst build-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/qemu/packer.json
 
 .PHONY: $(QEMU_VALIDATE_TARGETS)
 $(QEMU_VALIDATE_TARGETS): deps-qemu set-ssh-password
@@ -582,9 +609,17 @@ $(QEMU_KUBEVIRT_VALIDATE_TARGETS): deps-qemu set-ssh-password
 $(RAW_BUILD_TARGETS): deps-raw set-ssh-password
 	$(PACKER) build $(PACKER_NODE_FLAGS) -var-file="$(abspath packer/raw/$(subst build-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/raw/packer.json
 
+.PHONY: $(RAW_SYSEXT_BUILD_TARGETS)
+$(RAW_SYSEXT_BUILD_TARGETS): deps-raw set-ssh-password
+	$(PACKER) build $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var-file="$(abspath packer/raw/$(subst build-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/raw/packer.json
+
 .PHONY: $(RAW_VALIDATE_TARGETS)
 $(RAW_VALIDATE_TARGETS): deps-raw set-ssh-password
 	$(PACKER) validate $(PACKER_NODE_FLAGS) -var-file="$(abspath packer/raw/$(subst validate-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/raw/packer.json
+
+.PHONY: $(SYSEXT_BUILD_TARGETS)
+$(SYSEXT_BUILD_TARGETS): deps-sysext
+	sysext/build-sysext-layer.sh --name "$(subst build-sysext-,,$@)" --version "$(SYSEXT_VERSION)" --rootfs "$(SYSEXT_LAYER_ROOTFS)" --output-dir "$(SYSEXT_OUTPUT_DIR)" --os-id "$(SYSEXT_OS_ID)" --os-version "$(SYSEXT_OS_VERSION)" --arch "$(SYSEXT_ARCH)"
 
 .PHONY: $(OCI_BUILD_TARGETS)
 $(OCI_BUILD_TARGETS): deps-oci
