@@ -26,5 +26,8 @@ make build-sysext-kubernetes \
 ```
 
 The rootfs must contain only `usr/` and `opt/`. If
-`usr/lib/extension-release.d/extension-release.<name>` is missing, the helper
-creates one from the supplied OS, version, and architecture fields.
+`usr/lib/extension-release.d/extension-release.<raw-image-basename>` is
+missing, the helper creates one from the supplied OS, version, and architecture
+fields. The metadata filename must match the sysext image basename, for example
+`extension-release.kubernetes-v1.34.0-x86-64` for
+`kubernetes-v1.34.0-x86-64.raw`.

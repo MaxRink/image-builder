@@ -68,8 +68,9 @@ cleanup() {
 trap cleanup EXIT
 
 cp -a "${rootfs}/." "${workdir}/"
+raw_basename="${name}-${version}-${sysext_arch}"
 release_dir="${workdir}/usr/lib/extension-release.d"
-release_file="${release_dir}/extension-release.${name}"
+release_file="${release_dir}/extension-release.${raw_basename}"
 mkdir -p "${release_dir}"
 
 if [ ! -f "${release_file}" ]; then
@@ -83,7 +84,7 @@ EOF
 fi
 
 mkdir -p "${output_dir}"
-raw="${output_dir}/${name}-${version}-${sysext_arch}.raw"
+raw="${output_dir}/${raw_basename}.raw"
 size_kib="$(du -sk "${workdir}" | awk '{print $1}')"
 image_size_kib=$((size_kib + 16384))
 
