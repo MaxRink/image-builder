@@ -225,7 +225,9 @@
     - /swap.img
     - /swapfile
     - /mnt/resource/swapfile
-  when: ansible_facts['memory_mb'].swap.total != 0
+  when:
+    - sysprep_remove_swapfiles | default(true) | bool
+    - ansible_facts['memory_mb'].swap.total != 0
 
 - name: Truncate shell history
   ansible.builtin.file:
