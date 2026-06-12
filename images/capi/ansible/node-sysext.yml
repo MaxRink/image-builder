@@ -31,23 +31,9 @@
       loop_control:
         loop_var: role
       when: node_custom_roles_pre != ""
-    - name: Include node role
-      ansible.builtin.include_role:
-        name: node
-    - name: Include providers role
-      ansible.builtin.include_role:
-        name: providers
     - name: Include systemd sysext role
       ansible.builtin.include_role:
         name: systemd_sysext
-    - name: Include load_additional_components role
-      ansible.builtin.include_role:
-        name: load_additional_components
-      when: load_additional_components | bool
-    - name: Include ecr_credential_provider role
-      ansible.builtin.include_role:
-        name: ecr_credential_provider
-      when: ecr_credential_provider | bool
     - name: Include post-node custom roles
       ansible.builtin.include_role:
         name: "{{ role }}"
