@@ -18,4 +18,5 @@ remove_extra_repos: false
 flatcar_disable_autologin: false
 sysprep_require_grub_file: true
 defer_ssh_cleanup_to_packer: false
+sysprep_remove_swapfiles: true
 extra_kernel_boot_params: ""
