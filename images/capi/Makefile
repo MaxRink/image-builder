@@ -647,7 +647,7 @@ $(OPENSTACK_BUILD_TARGETS): deps-openstack
 
 .PHONY: $(OPENSTACK_SYSEXT_BUILD_TARGETS)
 $(OPENSTACK_SYSEXT_BUILD_TARGETS): deps-openstack
-	packer build $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var-file="$(abspath packer/openstack/$(subst build-openstack-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/openstack/packer.json
+	packer build $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var goss_entry_file="goss/goss-sysext.yaml" -var-file="$(abspath packer/openstack/$(subst build-openstack-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/openstack/packer.json
 
 .PHONY: $(OPENSTACK_VALIDATE_TARGETS)
 $(OPENSTACK_VALIDATE_TARGETS): deps-openstack
@@ -665,7 +665,7 @@ $(QEMU_BUILD_TARGETS): deps-qemu set-ssh-password
 .PHONY: $(QEMU_SYSEXT_BUILD_TARGETS)
 $(QEMU_SYSEXT_BUILD_TARGETS): deps-qemu set-ssh-password
 	python3 packer/qemu/scripts/render_ubuntu_autoinstall.py "$(abspath packer/qemu/$(subst build-,,$@).json)" $(PACKER_VAR_FILE_FLAGS)
-	$(PACKER) build $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var-file="$(abspath packer/qemu/$(subst build-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/qemu/packer.json
+	$(PACKER) build $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var goss_entry_file="goss/goss-sysext.yaml" -var-file="$(abspath packer/qemu/$(subst build-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/qemu/packer.json
 
 .PHONY: $(QEMU_VALIDATE_TARGETS)
 $(QEMU_VALIDATE_TARGETS): deps-qemu set-ssh-password
@@ -695,7 +695,7 @@ $(RAW_BUILD_TARGETS): deps-raw set-ssh-password
 .PHONY: $(RAW_SYSEXT_BUILD_TARGETS)
 $(RAW_SYSEXT_BUILD_TARGETS): deps-raw-sysext set-ssh-password
 	jq --arg timeout "$(RAW_SYSEXT_PROVISIONER_TIMEOUT)" '(.provisioners[] | select(.type == "ansible") | .timeout) = $$timeout' packer/raw/packer.json > "$(RAW_SYSEXT_PACKER_FILE)"
-	$(PACKER) build $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var-file="$(abspath packer/raw/$(subst build-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) "$(RAW_SYSEXT_PACKER_FILE)"
+	$(PACKER) build $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var goss_entry_file="goss/goss-sysext.yaml" -var-file="$(abspath packer/raw/$(subst build-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) "$(RAW_SYSEXT_PACKER_FILE)"
 
 .PHONY: $(RAW_VALIDATE_TARGETS)
 $(RAW_VALIDATE_TARGETS): deps-raw set-ssh-password
@@ -704,7 +704,7 @@ $(RAW_VALIDATE_TARGETS): deps-raw set-ssh-password
 .PHONY: $(RAW_SYSEXT_VALIDATE_TARGETS)
 $(RAW_SYSEXT_VALIDATE_TARGETS): deps-raw-sysext set-ssh-password
 	jq --arg timeout "$(RAW_SYSEXT_PROVISIONER_TIMEOUT)" '(.provisioners[] | select(.type == "ansible") | .timeout) = $$timeout' packer/raw/packer.json > "$(RAW_SYSEXT_PACKER_FILE)"
-	$(PACKER) validate $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var-file="$(abspath packer/raw/$(subst validate-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) "$(RAW_SYSEXT_PACKER_FILE)"
+	$(PACKER) validate $(PACKER_NODE_FLAGS) -var node_playbook_file="./ansible/node-sysext.yml" -var goss_entry_file="goss/goss-sysext.yaml" -var-file="$(abspath packer/raw/$(subst validate-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) "$(RAW_SYSEXT_PACKER_FILE)"
 
 .PHONY: $(SYSEXT_BUILD_TARGETS)
 $(SYSEXT_BUILD_TARGETS): deps-sysext
