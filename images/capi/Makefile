@@ -393,7 +393,7 @@ NODE_OVA_VSPHERE_BUILD_NAMES		:=	$(addprefix node-ova-vsphere-,$(PLATFORMS_AND_V
 NODE_OVA_VSPHERE_BASE_BUILD_NAMES		:=	$(addprefix node-ova-vsphere-base-,$(PLATFORMS_AND_VERSIONS))
 NODE_OVA_VSPHERE_CLONE_BUILD_NAMES		:=	$(addprefix node-ova-vsphere-clone-,$(PLATFORMS_AND_VERSIONS))
 
-AMI_BUILD_NAMES			   ?= ami-ubuntu-2204 ami-ubuntu-2404 ami-ubuntu-2604 ami-ubuntu-2204-arm64 ami-ubuntu-2404-arm64 ami-amazon-2 ami-amazon-2023 ami-amazon-2023-arm64 ami-flatcar ami-flatcar-arm64 ami-windows-2019
+AMI_BUILD_NAMES			   ?= ami-ubuntu-2204 ami-ubuntu-2404 ami-ubuntu-2604 ami-ubuntu-2204-arm64 ami-ubuntu-2404-arm64 ami-almalinux-9 ami-amazon-2 ami-amazon-2023 ami-amazon-2023-arm64 ami-flatcar ami-flatcar-arm64 ami-windows-2019
 HUAWEICLOUD_BUILD_NAMES ?= huaweicloud-ubuntu-2204
 GCE_BUILD_NAMES			   ?= gce-ubuntu-2204 gce-ubuntu-2404 gce-ubuntu-2604
 
@@ -741,6 +741,7 @@ $(RAW_CLEAN_TARGETS):
 ## Document dynamic build targets
 ## --------------------------------------
 ##@ Builds
+build-ami-almalinux-9: ## Builds AlmaLinux 9 AMI
 build-ami-amazon-2: ## Builds Amazon-2 Linux AMI
 build-ami-amazon-2023: ## Builds Amazon-2023 Linux AMI
 build-ami-amazon-2023-arm64: ## Builds Amazon-2023 Linux arm64 AMI
@@ -944,6 +945,7 @@ build-scaleway-all: $(SCALEWAY_BUILD_TARGETS) ## Builds all Scaleway images
 ## Document dynamic validate targets
 ## --------------------------------------
 ##@ Validate packer config
+validate-ami-almalinux-9: ## Validates AlmaLinux 9 AMI Packer config
 validate-ami-amazon-2: ## Validates Amazon-2 Linux AMI Packer config
 validate-ami-amazon-2023: ## Validates Amazon-2023 Linux AMI Packer config
 validate-ami-amazon-2023-arm64: ## Validates Amazon-2023 Linux arm64 AMI Packer config

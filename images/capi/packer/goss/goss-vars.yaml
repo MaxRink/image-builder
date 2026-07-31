@@ -182,6 +182,22 @@ centos:
       cloud-utils-growpart:
 almalinux:
   common-package: *common_rpms
+  amazon:
+    package:
+      amazon-ssm-agent:
+    command:
+      /usr/local/sbin/aws --version:
+        exit-status: 0
+        stderr: []
+        timeout: 0
+    service:
+      amazon-ssm-agent:
+        enabled: true
+        running: true
+    os_version:
+    - distro_version: "9"
+      package:
+        <<: *rh9_rpms
   ova:
     package:
       open-vm-tools:
