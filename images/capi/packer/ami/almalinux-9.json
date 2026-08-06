@@ -1,0 +1,16 @@
+{
+  "ami_filter_arch": "x86_64",
+  "ami_filter_name": "AlmaLinux OS 9.* x86_64",
+  "ami_filter_owners": "764336703387",
+  "arch": "amd64",
+  "build_name": "almalinux-9",
+  "distribution": "AlmaLinux",
+  "distribution_release": "AlmaLinux 9",
+  "distribution_version": "9",
+  "distro_version": "9",
+  "epel_rpm_gpg_key": "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-9",
+  "redhat_epel_rpm": "https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm",
+  "root_device_name": "/dev/sda1",
+  "source_ami": "",
+  "ssh_username": "ec2-user"
+}
