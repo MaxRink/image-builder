@@ -59,10 +59,10 @@
   retries: 30
   delay: 10
 
-- name: Unpin grub packages with apt-mark for MaaS
+- name: Unpin packages with apt-mark for MaaS
   ansible.builtin.shell: |
     set -o pipefail
-    dpkg-query -f '${binary:Package}\n' -W | grep grub | xargs apt-mark unhold
+    dpkg-query -f '${binary:Package}\n' -W | grep -E '^linux-|^grub|^initramfs' | xargs apt-mark unhold
 
   args:
     executable: /bin/bash
