@@ -30,7 +30,8 @@ creates the SSH user, so the source image is not modified.
 
 Flatcar (qemu-flatcar) images are not supported: Flatcar uses Ignition rather
 than cloud-init, and the build removes the SSH user before shutdown, so no
-supported QEMU_SEED value can authenticate to it.
+supported QEMU_SEED value can authenticate to it. Set QEMU_IMAGE_OS=flatcar
+to fail fast when invoking this helper for a Flatcar artifact.
 
 Environment:
   QEMU_BINARY              QEMU binary to run. Default: qemu-system-x86_64
@@ -52,6 +53,8 @@ Environment:
   QEMU_SSH_PUBLIC_KEY      SSH public key. Default: cloudinit/id_rsa.capi.pub
   QEMU_SMOKE_COMMAND       Command to run over SSH. Default: true
   QEMU_SEED                cloud-init or none. Default: cloud-init
+  QEMU_IMAGE_OS            Set to flatcar to fail before an unsupported smoke
+                           test is attempted. Default: unset
 EOF
 }
 
@@ -88,6 +91,7 @@ QEMU_SSH_PRIVATE_KEY="${QEMU_SSH_PRIVATE_KEY:-${capi_dir}/cloudinit/id_rsa.capi}
 QEMU_SSH_PUBLIC_KEY="${QEMU_SSH_PUBLIC_KEY:-${capi_dir}/cloudinit/id_rsa.capi.pub}"
 QEMU_SMOKE_COMMAND="${QEMU_SMOKE_COMMAND:-true}"
 QEMU_SEED="${QEMU_SEED:-cloud-init}"
+QEMU_IMAGE_OS="${QEMU_IMAGE_OS:-}"
 
 require_command() {
   if ! command -v "${1}" >/dev/null 2>&1; then
@@ -106,10 +110,8 @@ abs_path() {
   echo "$(cd "${dir}" && pwd -P)/${base}"
 }
 
-is_flatcar_image() {
-  local image="${1}"
-
-  [[ "${image,,}" == *flatcar* ]]
+is_flatcar_requested() {
+  [[ "${QEMU_IMAGE_OS}" == "flatcar" ]]
 }
 
 resolve_image() {
@@ -178,7 +180,7 @@ detect_accelerator() {
 
   case "$(uname -s)" in
   Linux)
-    if [[ -n "${binary_arch}" && "${binary_arch}" != "${host_arch}" ]]; then
+    if [[ -z "${binary_arch}" || "${binary_arch}" != "${host_arch}" ]]; then
       echo tcg
     elif [[ -r /dev/kvm && -w /dev/kvm ]]; then
       echo kvm
@@ -187,7 +189,7 @@ detect_accelerator() {
     fi
     ;;
   Darwin)
-    if [[ -n "${binary_arch}" && "${binary_arch}" != "${host_arch}" ]]; then
+    if [[ -z "${binary_arch}" || "${binary_arch}" != "${host_arch}" ]]; then
       echo tcg
     else
       echo hvf
@@ -273,7 +275,7 @@ require_command "${QEMU_IMG}"
 require_command ssh
 
 image="$(abs_path "$(resolve_image "${image_arg}")")"
-if is_flatcar_image "${image}"; then
+if is_flatcar_requested; then
   echo "qemu-boot-smoke.sh does not support Flatcar images: Flatcar uses Ignition, not cloud-init, and the build removes the SSH user before shutdown, so neither QEMU_SEED=cloud-init nor QEMU_SEED=none can authenticate. Image: ${image}" >&2
   exit 1
 fi
