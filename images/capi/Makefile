@@ -44,6 +44,10 @@ PACKER ?= $(shell \
 
 export IB_VERSION ?= $(shell git describe --dirty)
 
+ifneq ($(strip $(ANSIBLE_GALAXY_COLLECTIONS_PATH)),)
+export ANSIBLE_COLLECTIONS_PATH ?= $(ANSIBLE_GALAXY_COLLECTIONS_PATH)
+endif
+
 ## --------------------------------------
 ## Help
 ## --------------------------------------
