@@ -48,6 +48,10 @@
   vars:
     packages:
       - iptables-persistent
+  register: providers_azure_iptables_status
+  until: providers_azure_iptables_status is not failed
+  retries: 5
+  delay: 10
   when: ansible_facts['os_family'] == "Debian"
 
 - name: Block traffic to 168.63.129.16 port 80 for cve-2021-27075
@@ -75,6 +79,10 @@
     packages:
       - netbase
       - nfs-common
+  register: providers_azure_base_packages_status
+  until: providers_azure_base_packages_status is not failed
+  retries: 5
+  delay: 10
   when: ansible_facts['os_family'] == "Debian"
 
 ## refer to ../files/etc/cloud/cloud.cfg.d/15_azure-vnet.cfg

@@ -117,6 +117,10 @@
     autoremove: true
     force_apt_get: true
     lock_timeout: 300
+  register: sysprep_apt_cache_status
+  until: sysprep_apt_cache_status is not failed
+  retries: 5
+  delay: 10
 
 - name: Remove apt package lists
   ansible.builtin.file:
