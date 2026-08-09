@@ -1,4 +1,27 @@
 ---
+# Canonical's Ubuntu 26.04 Azure image can ship a legacy Microsoft prod source
+# for Ubuntu 18.04. image-builder does not use it, and its missing signing key
+# breaks subsequent apt updates, so remove only that stale source.
+- name: Find stale Microsoft 18.04 prod apt sources
+  ansible.builtin.find:
+    depth: 1
+    paths:
+      - /etc/apt
+      - /etc/apt/sources.list.d
+    patterns:
+      - "*.list"
+      - "*.sources"
+    contains: ".*https?://packages\\.microsoft\\.com/ubuntu/18\\.04/prod/?"
+  register: setup_stale_microsoft_prod_sources
+
+- name: Remove stale Microsoft 18.04 prod apt sources
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ setup_stale_microsoft_prod_sources.files | default([]) }}"
+  loop_control:
+    label: "{{ item.path }}"
+
 - name: Check for legacy Microsoft apt source
   ansible.builtin.find:
     depth: 1
