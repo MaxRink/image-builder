@@ -28,7 +28,7 @@ echo "mounting image..."
 mount /dev/nbd4p2 $TMP_DIR
 mount "/dev/nbd4p1" "$TMP_DIR/boot/efi"
 echo 'Tarring up image...'
-tar -Sczpf $BASE_PATH/$IMAGE_NAME.tar.gz --acls --selinux --xattrs -C $TMP_DIR  .
+tar -Sczpf $BASE_PATH/$IMAGE_NAME.tar.gz --exclude='./boot/efi/*' --exclude='./boot/efi' --acls --selinux --xattrs -C $TMP_DIR  .
 echo 'Unmounting image...'
 umount "$TMP_DIR/boot/efi"
 umount $TMP_DIR
