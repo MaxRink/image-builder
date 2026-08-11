@@ -42,6 +42,7 @@ jobs:
 
           config_file_pattern='^images/capi/packer/config/(ppc64le/)?containerd\.json$'
           generated_template='images/capi/ansible/roles/containerd/templates/etc/systemd/system/containerd.service'
+          generated_defaults='images/capi/ansible/roles/containerd/defaults/main.yml'
 
           mapfile -t changed_files < <(git diff --name-only "${BASE_SHA}"...HEAD)
           if ((${#changed_files[@]} == 0)); then
@@ -55,8 +56,8 @@ jobs:
 
           has_containerd_config_change=false
           for file in "${changed_files[@]}"; do
-            if [[ ! "${file}" =~ ${config_file_pattern} && "${file}" != "${generated_template}" ]]; then
-              echo "::error file=${file}::This workflow only handles containerd version pins and the generated containerd.service template."
+            if [[ ! "${file}" =~ ${config_file_pattern} && "${file}" != "${generated_template}" && "${file}" != "${generated_defaults}" ]]; then
+              echo "::error file=${file}::This workflow only handles containerd version pins and generated containerd role files."
               exit 1
             fi
             if [[ "${file}" =~ ${config_file_pattern} ]]; then
@@ -73,7 +74,7 @@ jobs:
           set -euo pipefail
           make update-containerd-service-template
 
-      - name: Commit generated template
+      - name: Commit generated containerd role files
         if: steps.scope.outputs.should_update == 'true'
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
@@ -81,13 +82,22 @@ jobs:
           set -euo pipefail
 
           generated_template='images/capi/ansible/roles/containerd/templates/etc/systemd/system/containerd.service'
-          if git diff --quiet -- "${generated_template}"; then
-            echo "containerd.service template is already current."
+          generated_defaults='images/capi/ansible/roles/containerd/defaults/main.yml'
+          mapfile -t generated_changes < <(git diff --name-only -- "${generated_template}" "${generated_defaults}")
+          if ((${#generated_changes[@]} == 0)); then
+            echo "containerd role files are already current."
             exit 0
           fi
 
           mapfile -t worktree_changes < <(git diff --name-only)
-          if ((${#worktree_changes[@]} != 1)) || [[ "${worktree_changes[0]}" != "${generated_template}" ]]; then
+          for file in "${worktree_changes[@]}"; do
+            if [[ "${file}" != "${generated_template}" && "${file}" != "${generated_defaults}" ]]; then
+              echo "::error::Updater changed unexpected files:"
+              printf '  %s\n' "${worktree_changes[@]}"
+              exit 1
+            fi
+          done
+          if ((${#worktree_changes[@]} != ${#generated_changes[@]})); then
             echo "::error::Updater changed unexpected files:"
             printf '  %s\n' "${worktree_changes[@]}"
             exit 1
@@ -95,6 +105,6 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "${generated_template}"
-          git commit -m "dependabot: update containerd service template"
+          git add "${generated_template}" "${generated_defaults}"
+          git commit -m "dependabot: update containerd service template metadata"
           git push origin "HEAD:${HEAD_REF}"

@@ -30,8 +30,14 @@ CONTAINERD_SERVICE_TEMPLATE = (
     ROOT / "ansible/roles/containerd/templates/etc/systemd/system/containerd.service"
 )
 CONTAINERD_DEFAULTS = ROOT / "ansible/roles/containerd/defaults/main.yml"
-CONTAINERD_SERVICE_TEMPLATE_VERSION_RE = re.compile(
-    r'^containerd_service_template_version:\s*"(?P<version>[^"]*)"', re.MULTILINE
+CONTAINERD_SERVICE_TEMPLATE_VERSIONS_RE = re.compile(
+    r"^containerd_service_template_versions:\n"
+    r"(?P<entries>(?:[ \t]+-\s*\"[^\"]*\"\n)+)",
+    re.MULTILINE,
+)
+CONTAINERD_SERVICE_TEMPLATE_VERSION_ENTRY_RE = re.compile(
+    r'^[ \t]+-\s*"(?P<version>[^"]*)"\s*$',
+    re.MULTILINE,
 )
 CONTAINERD_SERVICE_URL = (
     "https://raw.githubusercontent.com/containerd/containerd/"
@@ -58,28 +64,41 @@ def fetch_containerd_service(version):
     return url, service
 
 
-def _match_service_template_version(defaults_path, text):
-    match = CONTAINERD_SERVICE_TEMPLATE_VERSION_RE.search(text)
+def _match_service_template_versions(defaults_path, text):
+    match = CONTAINERD_SERVICE_TEMPLATE_VERSIONS_RE.search(text)
     if not match:
         raise ValueError(
-            f"{defaults_path} does not set containerd_service_template_version"
+            f"{defaults_path} does not set containerd_service_template_versions"
         )
-    return match
+    versions = [
+        matched.group("version")
+        for matched in CONTAINERD_SERVICE_TEMPLATE_VERSION_ENTRY_RE.finditer(
+            match.group("entries")
+        )
+    ]
+    if not versions:
+        raise ValueError(
+            f"{defaults_path} does not set any containerd_service_template_versions"
+        )
+    return match, versions
 
 
-def service_template_version(defaults_path):
+def service_template_versions(defaults_path):
     text = defaults_path.read_text(encoding="utf-8")
-    return _match_service_template_version(defaults_path, text).group("version")
+    _, versions = _match_service_template_versions(defaults_path, text)
+    return versions
 
 
-def write_service_template_version(defaults_path, version):
+def write_service_template_versions(defaults_path, versions):
     text = defaults_path.read_text(encoding="utf-8")
-    match = _match_service_template_version(defaults_path, text)
-    if match.group("version") == version:
+    match, current_versions = _match_service_template_versions(defaults_path, text)
+    if current_versions == versions:
         return False
 
-    start, end = match.span("version")
-    defaults_path.write_text(text[:start] + version + text[end:], encoding="utf-8")
+    rendered_versions = "".join(f'  - "{version}"\n' for version in versions)
+    replacement = f"containerd_service_template_versions:\n{rendered_versions}"
+    start, end = match.span()
+    defaults_path.write_text(text[:start] + replacement + text[end:], encoding="utf-8")
     return True
 
 
@@ -112,14 +131,17 @@ def resolve_expected_service(version, ppc64le_version):
     containerd version and, when architecture pins have diverged, checks
     that the upstream units for both pinned versions are equivalent.
 
-    Returns (url, service) for the generic pin on success, or None if the
-    diverging pins produce non-equivalent upstream units (the caller should
-    treat that as a hard failure).
+    Returns (url, service, versions) for the generic pin on success, or None
+    if the diverging pins produce non-equivalent upstream units (the caller
+    should treat that as a hard failure). `versions` contains the generic pin
+    first, plus architecture-specific pins whose upstream service unit is
+    equivalent.
     """
     url, expected = fetch_containerd_service(version)
+    supported_versions = [version]
 
     if ppc64le_version == version:
-        return url, expected
+        return url, expected, supported_versions
 
     ppc64le_url, ppc64le_expected = fetch_containerd_service(ppc64le_version)
     if ppc64le_expected != expected:
@@ -150,7 +172,8 @@ def resolve_expected_service(version, ppc64le_version):
         "continuing with the generic pin.",
         file=sys.stderr,
     )
-    return url, expected
+    supported_versions.append(ppc64le_version)
+    return url, expected, supported_versions
 
 
 def main():
@@ -162,7 +185,7 @@ def main():
     resolved = resolve_expected_service(version, ppc64le_version)
     if resolved is None:
         return 1
-    url, expected = resolved
+    url, expected, supported_versions = resolved
 
     current = CONTAINERD_SERVICE_TEMPLATE.read_text(encoding="utf-8")
 
@@ -175,10 +198,11 @@ def main():
             print(f"Updated {CONTAINERD_SERVICE_TEMPLATE.relative_to(ROOT)} from {url}")
             changed = True
 
-        if write_service_template_version(CONTAINERD_DEFAULTS, version):
+        if write_service_template_versions(CONTAINERD_DEFAULTS, supported_versions):
             print(
-                f"Updated containerd_service_template_version in "
-                f"{CONTAINERD_DEFAULTS.relative_to(ROOT)} to {version}"
+                "Updated containerd_service_template_versions in "
+                f"{CONTAINERD_DEFAULTS.relative_to(ROOT)} to "
+                f"[{', '.join(supported_versions)}]"
             )
             changed = True
 
@@ -186,19 +210,19 @@ def main():
             print("Nothing to update.")
         return 0
 
-    template_version = service_template_version(CONTAINERD_DEFAULTS)
+    template_versions = service_template_versions(CONTAINERD_DEFAULTS)
     problems = []
 
     if current != expected:
         problems.append("template_mismatch")
 
-    if template_version != version:
+    if template_versions != supported_versions:
         problems.append("pin_mismatch")
 
     if not problems:
         print(
             f"{CONTAINERD_SERVICE_TEMPLATE.relative_to(ROOT)} matches "
-            f"containerd v{version}"
+            f"containerd version pin(s): {', '.join(supported_versions)}"
         )
         return 0
 
@@ -214,10 +238,13 @@ def main():
 
     if "pin_mismatch" in problems:
         print(
-            "containerd_service_template_version in "
-            f"{CONTAINERD_DEFAULTS.relative_to(ROOT)} ({template_version}) does "
-            f"not match the pinned containerd_version ({version}) in "
-            f"{CONTAINERD_CONFIG.relative_to(ROOT)}.",
+            "containerd_service_template_versions in "
+            f"{CONTAINERD_DEFAULTS.relative_to(ROOT)} "
+            f"([{', '.join(template_versions)}]) do not match the supported "
+            "containerd version pin(s) "
+            f"([{', '.join(supported_versions)}]) from "
+            f"{CONTAINERD_CONFIG.relative_to(ROOT)} and "
+            f"{PPC64LE_CONTAINERD_CONFIG.relative_to(ROOT)}.",
             file=sys.stderr,
         )
 

@@ -9,7 +9,8 @@ The Azure SIG image pipeline is defined in `build-azure-sig.yaml`, which contain
 `update-containerd-service-template.yaml` is a maintenance workflow for
 Dependabot PRs. When a same-repository Dependabot branch updates the pinned
 Linux containerd version files, it refreshes the bundled `containerd.service`
-template and commits the generated change back to the Dependabot branch.
+template and containerd role defaults, then commits generated changes back to
+the Dependabot branch.
 
 ## Pipeline Stages
 
