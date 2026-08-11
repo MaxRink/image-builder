@@ -20,7 +20,7 @@ environment variables:
 | Variable | Description |
 |----------|-------------|
 | `ANSIBLE_GALAXY_SERVER` | Galaxy API server URL passed to `ansible-galaxy collection install --server` |
-| `ANSIBLE_GALAXY_TOKEN` | API token passed to `ansible-galaxy collection install --token` |
+| `ANSIBLE_GALAXY_TOKEN` | API token used for Galaxy authentication (written to a temporary token file so it is not exposed via command-line arguments) |
 | `ANSIBLE_GALAXY_IGNORE_CERTS` | Set to `true` to pass `--ignore-certs` |
 | `ANSIBLE_GALAXY_TIMEOUT` | Timeout passed to `ansible-galaxy collection install --timeout` |
 | `ANSIBLE_GALAXY_COLLECTIONS_PATH` | Collection install path passed to `--collections-path`. Also exported as `ANSIBLE_COLLECTIONS_PATH` so Ansible can discover the installed collections at provisioning time |

@@ -39,12 +39,17 @@ gcloud auth list
 groupadd -r packer && useradd -m -s /bin/bash -r -g packer packer
 chown -R packer:packer /home/prow/go/src/sigs.k8s.io/image-builder
 # use the packer user to run the build
+galaxy_env_whitelist="ANSIBLE_GALAXY_SERVER,ANSIBLE_GALAXY_TOKEN,ANSIBLE_GALAXY_TOKEN_PATH,ANSIBLE_GALAXY_IGNORE_CERTS,ANSIBLE_GALAXY_TIMEOUT,ANSIBLE_GALAXY_COLLECTIONS_PATH,ANSIBLE_GALAXY_NO_CACHE,ANSIBLE_GALAXY_OFFLINE,ANSIBLE_COLLECTIONS_PATH"
+export GCP_PROJECT_ID="${GCP_PROJECT}"
 
 # Build image for each available config
 for f in packer/gce/ci/nightly/*.json
 do
   # using PACKER_FLAGS=-force to overwrite the previous image and keep the same name
-  su - packer -c "bash -c 'cd /home/prow/go/src/sigs.k8s.io/image-builder/images/capi && PATH=$PATH:~packer/.local/bin:/home/prow/go/src/sigs.k8s.io/image-builder/images/capi/.local/bin GCP_PROJECT_ID=$GCP_PROJECT PACKER_VAR_FILES=${f} PACKER_FLAGS=-force make deps-gce build-gce-all'"
+  export PACKER_VAR_FILES="${f}"
+  export PACKER_FLAGS=-force
+  su --whitelist-environment="${galaxy_env_whitelist},GCP_PROJECT_ID,PACKER_VAR_FILES,PACKER_FLAGS" \
+    - packer -c "bash -c 'cd /home/prow/go/src/sigs.k8s.io/image-builder/images/capi && PATH=\$PATH:~packer/.local/bin:/home/prow/go/src/sigs.k8s.io/image-builder/images/capi/.local/bin make deps-gce build-gce-all'"
 done
 
 echo "Displaying the generated image information"

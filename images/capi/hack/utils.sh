@@ -122,6 +122,7 @@ pip3_install() {
 ansible_galaxy_collection_install() {
   local -a galaxy_args=()
   local xtrace_was_on=false
+  local galaxy_token_path=
   [[ $- == *x* ]] && xtrace_was_on=true
 
   if [[ -n "${ANSIBLE_GALAXY_SERVER:-}" ]]; then
@@ -133,7 +134,12 @@ ansible_galaxy_collection_install() {
   # that condition) and restore whatever xtrace state was active before.
   set +o xtrace
   if [[ -n "${ANSIBLE_GALAXY_TOKEN:-}" ]]; then
-    galaxy_args+=(--token "${ANSIBLE_GALAXY_TOKEN}")
+    mkdir -p "${HOME}/.ansible"
+    galaxy_token_path="${HOME}/.ansible/image-builder-galaxy-token-$$"
+    if ! (umask 077 && printf '%s\n' "${ANSIBLE_GALAXY_TOKEN}" > "${galaxy_token_path}"); then
+      [[ "${xtrace_was_on}" == true ]] && set -o xtrace
+      return 1
+    fi
   fi
   [[ "${xtrace_was_on}" == true ]] && set -o xtrace
 
@@ -150,7 +156,16 @@ ansible_galaxy_collection_install() {
     # standard ANSIBLE_COLLECTIONS_PATH variable, and most provisioner
     # templates never forward a custom path otherwise, so export it here
     # too to make the installed collections actually usable later.
-    export ANSIBLE_COLLECTIONS_PATH="${ANSIBLE_GALAXY_COLLECTIONS_PATH}"
+    if [[ -n "${ANSIBLE_COLLECTIONS_PATH:-}" ]]; then
+      case ":${ANSIBLE_COLLECTIONS_PATH}:" in
+      *":${ANSIBLE_GALAXY_COLLECTIONS_PATH}:"*) ;;
+      *)
+        export ANSIBLE_COLLECTIONS_PATH="${ANSIBLE_GALAXY_COLLECTIONS_PATH}:${ANSIBLE_COLLECTIONS_PATH}"
+        ;;
+      esac
+    else
+      export ANSIBLE_COLLECTIONS_PATH="${ANSIBLE_GALAXY_COLLECTIONS_PATH}"
+    fi
   fi
   if [[ "${ANSIBLE_GALAXY_NO_CACHE:-false}" == "true" ]]; then
     galaxy_args+=(--no-cache)
@@ -163,8 +178,21 @@ ansible_galaxy_collection_install() {
   # token added above, and it would otherwise be written to the trace log.
   set +o xtrace
   local rc
-  ansible-galaxy collection install ${galaxy_args[@]+"${galaxy_args[@]}"} "$@"
-  rc=$?
+  if [[ -n "${galaxy_token_path}" ]]; then
+    if ANSIBLE_GALAXY_TOKEN='' ANSIBLE_GALAXY_TOKEN_PATH="${galaxy_token_path}" \
+      ansible-galaxy collection install ${galaxy_args[@]+"${galaxy_args[@]}"} "$@"; then
+      rc=0
+    else
+      rc=$?
+    fi
+    rm -f "${galaxy_token_path}"
+  else
+    if ansible-galaxy collection install ${galaxy_args[@]+"${galaxy_args[@]}"} "$@"; then
+      rc=0
+    else
+      rc=$?
+    fi
+  fi
   [[ "${xtrace_was_on}" == true ]] && set -o xtrace
   return "${rc}"
 }
