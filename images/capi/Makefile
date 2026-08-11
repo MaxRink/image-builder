@@ -44,8 +44,14 @@ PACKER ?= $(shell \
 
 export IB_VERSION ?= $(shell git describe --dirty)
 
+# Keep the Galaxy install path first while retaining any paths supplied by the
+# caller. Export this at Make scope so later Packer recipes inherit it.
 ifneq ($(strip $(value ANSIBLE_GALAXY_COLLECTIONS_PATH)),)
-export ANSIBLE_COLLECTIONS_PATH ?= $(value ANSIBLE_GALAXY_COLLECTIONS_PATH)
+ifneq ($(strip $(value ANSIBLE_COLLECTIONS_PATH)),)
+override export ANSIBLE_COLLECTIONS_PATH := $(value ANSIBLE_GALAXY_COLLECTIONS_PATH):$(value ANSIBLE_COLLECTIONS_PATH)
+else
+override export ANSIBLE_COLLECTIONS_PATH := $(value ANSIBLE_GALAXY_COLLECTIONS_PATH)
+endif
 endif
 
 ## --------------------------------------
@@ -627,6 +633,10 @@ $(QEMU_VALIDATE_TARGETS): deps-qemu set-ssh-password
 .PHONY: test-qemu-immutable
 test-qemu-immutable: ## Runs immutable QEMU helper unit tests
 	python3 -m unittest discover -s packer/qemu/scripts -p '*_test.py'
+
+.PHONY: test-galaxy
+test-galaxy: ## Runs Galaxy authentication and collection path tests
+	python3 -m unittest discover -s hack -p 'utils_test.py'
 
 validate-qemu-ubuntu-2404-immutable: test-qemu-immutable
 

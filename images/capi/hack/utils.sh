@@ -134,9 +134,16 @@ ansible_galaxy_collection_install() {
   # that condition) and restore whatever xtrace state was active before.
   set +o xtrace
   if [[ -n "${ANSIBLE_GALAXY_TOKEN:-}" ]]; then
-    mkdir -p "${HOME}/.ansible"
     galaxy_token_path="${HOME}/.ansible/image-builder-galaxy-token-$$"
-    if ! (umask 077 && printf '%s\n' "${ANSIBLE_GALAXY_TOKEN}" > "${galaxy_token_path}"); then
+    if ! (
+      umask 077
+      set -o pipefail
+      mkdir -p "${HOME}/.ansible"
+      printf '%s' "${ANSIBLE_GALAXY_TOKEN}" |
+        python3 -c 'import sys, yaml; yaml.safe_dump({"token": sys.stdin.read()}, sys.stdout, default_flow_style=False)' \
+          > "${galaxy_token_path}"
+    ); then
+      rm -f "${galaxy_token_path}"
       [[ "${xtrace_was_on}" == true ]] && set -o xtrace
       return 1
     fi
@@ -155,7 +162,9 @@ ansible_galaxy_collection_install() {
     # install itself. Ansible discovers collections at runtime via the
     # standard ANSIBLE_COLLECTIONS_PATH variable, and most provisioner
     # templates never forward a custom path otherwise, so export it here
-    # too to make the installed collections actually usable later.
+    # too to make the installed collections actually usable later. Make
+    # exports the merged value for later recipes; retain this fallback for
+    # callers that invoke this helper directly.
     if [[ -n "${ANSIBLE_COLLECTIONS_PATH:-}" ]]; then
       case ":${ANSIBLE_COLLECTIONS_PATH}:" in
       *":${ANSIBLE_GALAXY_COLLECTIONS_PATH}:"*) ;;
