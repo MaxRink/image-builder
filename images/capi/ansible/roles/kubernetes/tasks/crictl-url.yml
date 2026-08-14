@@ -18,6 +18,10 @@
     checksum: sha256:{{ crictl_url }}.sha256
     dest: /tmp/{{ crictl_filename }}
     mode: "0600"
+  register: crictl_download
+  until: crictl_download is not failed
+  retries: 5
+  delay: 3
 
 - name: Create crictl bin directory
   ansible.builtin.file:

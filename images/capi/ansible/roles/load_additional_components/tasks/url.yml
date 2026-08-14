@@ -25,6 +25,7 @@
     mode: "0600"
   register: images
   loop: "{{ additional_url_images_list.split(',') }}"
+  until: images is not failed
   retries: 5
   delay: 3
 
