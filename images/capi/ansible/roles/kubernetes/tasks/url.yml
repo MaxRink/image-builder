@@ -28,6 +28,10 @@
     mode: "0755"
     owner: root
     group: root
+  register: kubernetes_cni_tarball_download
+  until: kubernetes_cni_tarball_download is not failed
+  retries: 5
+  delay: 3
 
 - name: Install CNI
   ansible.builtin.unarchive:
@@ -49,6 +53,10 @@
     owner: root
     group: root
   loop: "{{ kubernetes_bins }}"
+  register: kubernetes_bins_download
+  until: kubernetes_bins_download is not failed
+  retries: 5
+  delay: 3
 
 - name: Download Kubernetes images
   ansible.builtin.get_url:
@@ -57,6 +65,10 @@
     dest: /tmp/{{ item }}
     mode: "0600"
   loop: "{{ kubernetes_imgs }}"
+  register: kubernetes_imgs_download
+  until: kubernetes_imgs_download is not failed
+  retries: 5
+  delay: 3
 
 - name: Copy Kubernetes image modification script
   ansible.builtin.copy:

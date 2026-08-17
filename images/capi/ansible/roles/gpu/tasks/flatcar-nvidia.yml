@@ -36,6 +36,8 @@
     owner: root
     group: root
     mode: "0644"
+  register: gpu_flatcar_nvidia_runtime_download
+  until: gpu_flatcar_nvidia_runtime_download is not failed
   retries: 5
   delay: 3
 

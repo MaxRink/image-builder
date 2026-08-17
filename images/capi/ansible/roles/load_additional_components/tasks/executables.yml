@@ -18,5 +18,7 @@
     dest: "{{ additional_executables_destination_path }}"
     mode: "0711"
   loop: "{{ additional_executables_list.split(',') }}"
+  register: additional_executables_download
+  until: additional_executables_download is not failed
   retries: 5
   delay: 3
