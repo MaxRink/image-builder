@@ -6,6 +6,6 @@ require (
 	github.com/containerd/containerd/v2 v2.3.2
 	github.com/containernetworking/plugins v1.8.0
 	github.com/opencontainers/runc v1.4.3
-	k8s.io/client-go v0.35.6
+	k8s.io/client-go v0.35.7
 	sigs.k8s.io/cri-tools v1.35.0
 )
