@@ -138,8 +138,9 @@ should:
    `/etc/machine-id` is non-empty after first boot.
 
 For a local pre-CAPI boot smoke, boot the produced artifact with QEMU and a
-temporary NoCloud seed. The smoke should use the same checks as above, plus a
-reboot/persistence check, before the image is promoted to provider CAPI tests.
+temporary NoCloud seed. The smoke checks SSH reachability and runs one command
+before the image is promoted to provider CAPI tests. It does not verify reboot
+persistence, immutable-image behavior, or the full CAPI test set.
 
 ## Boot smoke test
 
