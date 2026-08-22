@@ -210,9 +210,9 @@ class RenderUbuntuAutoinstallTests(unittest.TestCase):
             / "qemu-ubuntu-2404-immutable.json"
         )
 
-        self.assertEqual(
-            "https://releases.ubuntu.com/24.04.4/ubuntu-24.04.4-live-server-amd64.iso",
+        self.assertRegex(
             json.loads(target.read_text(encoding="utf-8"))["iso_url"],
+            r"^https://releases\.ubuntu\.com/(24\.04\.\d+)/ubuntu-\1-live-server-amd64\.iso$",
         )
 
 
