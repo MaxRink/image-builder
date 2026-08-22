@@ -124,23 +124,28 @@ ansible_galaxy_collection_install() {
   local xtrace_was_on=false
   local galaxy_token_path=
   [[ $- == *x* ]] && xtrace_was_on=true
+  # Galaxy credentials must not be exposed in xtrace output or process
+  # arguments. Keep tracing disabled until all credential handling is done.
+  set +o xtrace
 
   if [[ -n "${ANSIBLE_GALAXY_SERVER:-}" ]]; then
     galaxy_args+=(--server "${ANSIBLE_GALAXY_SERVER}")
   fi
 
-  # Never let xtrace print the Galaxy token: disable it before even checking
-  # ANSIBLE_GALAXY_TOKEN (xtrace would otherwise echo the expanded value of
-  # that condition) and restore whatever xtrace state was active before.
-  set +o xtrace
   if [[ -n "${ANSIBLE_GALAXY_TOKEN:-}" ]]; then
-    galaxy_token_path="${HOME}/.ansible/image-builder-galaxy-token-$$"
+    if ! mkdir -p "${HOME}/.ansible"; then
+      [[ "${xtrace_was_on}" == true ]] && set -o xtrace
+      return 1
+    fi
+    if ! galaxy_token_path="$(umask 077 && mktemp "${HOME}/.ansible/image-builder-galaxy-token-XXXXXX")"; then
+      [[ "${xtrace_was_on}" == true ]] && set -o xtrace
+      return 1
+    fi
     if ! (
       umask 077
       set -o pipefail
-      mkdir -p "${HOME}/.ansible"
       printf '%s' "${ANSIBLE_GALAXY_TOKEN}" |
-        python3 -c 'import sys, yaml; yaml.safe_dump({"token": sys.stdin.read()}, sys.stdout, default_flow_style=False)' \
+        env -u ANSIBLE_GALAXY_TOKEN python3 -c 'import json, sys; json.dump({"token": sys.stdin.read()}, sys.stdout)' \
           > "${galaxy_token_path}"
     ); then
       rm -f "${galaxy_token_path}"
@@ -148,7 +153,6 @@ ansible_galaxy_collection_install() {
       return 1
     fi
   fi
-  [[ "${xtrace_was_on}" == true ]] && set -o xtrace
 
   if [[ "${ANSIBLE_GALAXY_IGNORE_CERTS:-false}" == "true" ]]; then
     galaxy_args+=(--ignore-certs)
@@ -183,9 +187,6 @@ ansible_galaxy_collection_install() {
     galaxy_args+=(--offline)
   fi
 
-  # Suspend xtrace again for the final command: galaxy_args may contain the
-  # token added above, and it would otherwise be written to the trace log.
-  set +o xtrace
   local rc
   if [[ -n "${galaxy_token_path}" ]]; then
     if ANSIBLE_GALAXY_TOKEN='' ANSIBLE_GALAXY_TOKEN_PATH="${galaxy_token_path}" \

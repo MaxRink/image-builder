@@ -48,10 +48,11 @@ export IB_VERSION ?= $(shell git describe --dirty)
 # caller. Export this at Make scope so later Packer recipes inherit it.
 ifneq ($(strip $(value ANSIBLE_GALAXY_COLLECTIONS_PATH)),)
 ifneq ($(strip $(value ANSIBLE_COLLECTIONS_PATH)),)
-override export ANSIBLE_COLLECTIONS_PATH := $(value ANSIBLE_GALAXY_COLLECTIONS_PATH):$(value ANSIBLE_COLLECTIONS_PATH)
+override ANSIBLE_COLLECTIONS_PATH := $(value ANSIBLE_GALAXY_COLLECTIONS_PATH):$(value ANSIBLE_COLLECTIONS_PATH)
 else
-override export ANSIBLE_COLLECTIONS_PATH := $(value ANSIBLE_GALAXY_COLLECTIONS_PATH)
+override ANSIBLE_COLLECTIONS_PATH := $(value ANSIBLE_GALAXY_COLLECTIONS_PATH)
 endif
+export ANSIBLE_COLLECTIONS_PATH
 endif
 
 ## --------------------------------------
