@@ -55,14 +55,15 @@
     - name: Include systemd sysext role
       ansible.builtin.include_role:
         name: systemd_sysext
+    # additional_registry_images and additional_url_images are unsupported here:
+    # they import images into a running containerd, which this image does not
+    # have. The executables and s3 preloads work as usual.
     - name: Include load_additional_components role
       ansible.builtin.include_role:
         name: load_additional_components
       when: load_additional_components | bool
-    - name: Include ecr_credential_provider role
-      ansible.builtin.include_role:
-        name: ecr_credential_provider
-      when: ecr_credential_provider | bool
+    # ecr_credential_provider is omitted: it hard-fails on the missing
+    # /etc/default/kubelet, which only the kubernetes role writes.
     - name: Include post-node custom roles
       ansible.builtin.include_role:
         name: "{{ role }}"
