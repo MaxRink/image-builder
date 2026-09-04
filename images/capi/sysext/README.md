@@ -4,8 +4,10 @@ This directory contains generic helpers for optional system extension images.
 Existing CAPI image targets do not use this path yet. Future `*-sysext` targets
 can build minimal base images that install only the `systemd-sysext` plumbing
 and expect Kubernetes, containerd, CNI, or other payloads to be supplied as
-extension images at bootstrap time. The normal `node` and provider roles remain
-attached only to the existing non-sysext targets.
+extension images at bootstrap time. `ansible/node-sysext.yml` composes the same
+roles as `ansible/node.yml` minus `containerd` and `kubernetes`, so the base
+image still gets the common packages, kernel modules, sysctls, and guest agents
+that a system extension cannot supply later.
 
 Those future sysext image targets should use `packer/goss/goss-sysext.yaml`
 instead of the normal node Goss suite. That test checks the extension

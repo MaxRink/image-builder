@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ---
+# Same role composition as node.yml, minus the containerd and kubernetes
+# roles, whose payloads are expected to arrive as system extension images at
+# bootstrap time. The node and providers roles stay because a sysext cannot
+# supply base packages, kernel modules, sysctls, or guest agents.
 - name: Provision sysext-capable node base
   hosts: all
   become: true
@@ -19,16 +23,20 @@
     node_custom_roles_pre: ""
     node_custom_roles_post: ""
     custom_role_names: ""
-    sysprep_remove_swapfiles: false
+    node_ansible_tmpdir: ""
     system: linux
-    arch_map:
-      x86_64: amd64
-      amd64: amd64
-      aarch64: arm64
-      arm64: arm64
-      ppc64le: ppc64le
     arch_uname: "{{ ansible_facts['architecture'] }}"
-    arch: "{{ arch_map.get(arch_uname, 'unsupported') }}"
+    arch: "{{ {'x86_64': 'amd64', 'amd64': 'amd64', 'aarch64': 'arm64', 'arm64': 'arm64', 'ppc64le': 'ppc64le'}.get(arch_uname, 'unsupported') }}"
+    node_environment:
+      http_proxy: "{{ http_proxy | default('') }}"
+      https_proxy: "{{ https_proxy | default('') }}"
+      no_proxy: "{{ no_proxy | default('') }}"
+      HTTP_PROXY: "{{ http_proxy | default('') }}"
+      HTTPS_PROXY: "{{ https_proxy | default('') }}"
+      NO_PROXY: "{{ no_proxy | default('') }}"
+      PYTHONPATH: "{{ python_path }}"
+    node_tmpdir_environment:
+      TMPDIR: "{{ node_ansible_tmpdir }}"
 
   tasks:
     - name: Include pre-node custom roles
@@ -38,9 +46,23 @@
       loop_control:
         loop_var: role
       when: node_custom_roles_pre != ""
+    - name: Include node role
+      ansible.builtin.include_role:
+        name: node
+    - name: Include providers role
+      ansible.builtin.include_role:
+        name: providers
     - name: Include systemd sysext role
       ansible.builtin.include_role:
         name: systemd_sysext
+    - name: Include load_additional_components role
+      ansible.builtin.include_role:
+        name: load_additional_components
+      when: load_additional_components | bool
+    - name: Include ecr_credential_provider role
+      ansible.builtin.include_role:
+        name: ecr_credential_provider
+      when: ecr_credential_provider | bool
     - name: Include post-node custom roles
       ansible.builtin.include_role:
         name: "{{ role }}"
@@ -67,11 +89,9 @@
         loop_var: role
       when: node_custom_roles_post_sysprep != ""
 
-  environment:
-    http_proxy: "{{ http_proxy | default('') }}"
-    https_proxy: "{{ https_proxy | default('') }}"
-    no_proxy: "{{ no_proxy | default('') }}"
-    HTTP_PROXY: "{{ http_proxy | default('') }}"
-    HTTPS_PROXY: "{{ https_proxy | default('') }}"
-    NO_PROXY: "{{ no_proxy | default('') }}"
-    PYTHONPATH: "{{ python_path }}"
+  environment: >-
+    {{
+      node_environment | combine(node_tmpdir_environment)
+      if node_ansible_tmpdir | length > 0
+      else node_environment
+    }}
