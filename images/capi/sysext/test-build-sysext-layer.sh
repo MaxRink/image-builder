@@ -44,10 +44,18 @@ raw="$("${script_dir}/build-sysext-layer.sh" \
   --os-version 24.04 \
   --arch x86_64)"
 
-expected="/usr/lib/extension-release.d/extension-release.sysext-test-v1.2.3-x86-64"
-if ! debugfs -R "stat ${expected}" "${raw}" >/dev/null 2>&1; then
-  echo "missing expected extension-release metadata: ${expected}" >&2
-  exit 1
-fi
+# debugfs exits 0 whether or not the path resolves, so check that it actually
+# printed an inode for the file.
+assert_file_in_image() {
+  local image="$1" path="$2"
+  if ! debugfs -R "stat ${path}" "${image}" 2>/dev/null | grep -q '^Inode:'; then
+    echo "missing expected path in sysext image: ${path}" >&2
+    exit 1
+  fi
+}
+
+assert_file_in_image "${raw}" \
+  "/usr/lib/extension-release.d/extension-release.sysext-test-v1.2.3-x86-64"
+assert_file_in_image "${raw}" "/usr/share/sysext-test/payload"
 
 echo "sysext layer helper smoke test passed"
