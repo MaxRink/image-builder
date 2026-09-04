@@ -56,6 +56,10 @@ floor, and `SYSEXT_MIN_INODES` (default `1024`) is the inode floor. The inode
 count is set explicitly because `mke2fs` otherwise derives it from the image
 size, which runs out on payloads made of many small files.
 
+`make test-sysext` runs the helper's smoke test. It is part of `make
+validate-all` and skips itself when `mke2fs` or `debugfs` is missing, or when
+the host can neither pass a tar stream to `mke2fs` nor run as root.
+
 The rootfs must contain only `usr/` and `opt/`. If
 `usr/lib/extension-release.d/extension-release.<raw-image-basename>` is
 missing, the helper creates one from the supplied OS, version, and architecture
