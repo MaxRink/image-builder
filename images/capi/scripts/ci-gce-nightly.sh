@@ -39,7 +39,15 @@ gcloud auth list
 groupadd -r packer && useradd -m -s /bin/bash -r -g packer packer
 chown -R packer:packer /home/prow/go/src/sigs.k8s.io/image-builder
 # use the packer user to run the build
-galaxy_env_whitelist="ANSIBLE_GALAXY_SERVER,ANSIBLE_GALAXY_TOKEN,ANSIBLE_GALAXY_TOKEN_PATH,ANSIBLE_GALAXY_IGNORE_CERTS,ANSIBLE_GALAXY_TIMEOUT,ANSIBLE_GALAXY_COLLECTIONS_PATH,ANSIBLE_GALAXY_NO_CACHE,ANSIBLE_GALAXY_OFFLINE,ANSIBLE_COLLECTIONS_PATH"
+# ansible-galaxy is configured through ansible-core's own settings, see
+# docs/book/src/capi/capi.md. "su -" resets the environment, so forward every
+# ANSIBLE_* variable that is set; the per-server credentials are named after
+# the entries in ANSIBLE_GALAXY_SERVER_LIST and cannot be listed statically.
+# The list keeps a trailing comma so it can be concatenated when it is empty.
+ansible_env_whitelist=""
+for ansible_var in ${!ANSIBLE_@}; do
+  ansible_env_whitelist="${ansible_env_whitelist}${ansible_var},"
+done
 export GCP_PROJECT_ID="${GCP_PROJECT}"
 
 # Build image for each available config
@@ -48,8 +56,8 @@ do
   # using PACKER_FLAGS=-force to overwrite the previous image and keep the same name
   export PACKER_VAR_FILES="${f}"
   export PACKER_FLAGS=-force
-  su --whitelist-environment="${galaxy_env_whitelist},GCP_PROJECT_ID,PACKER_VAR_FILES,PACKER_FLAGS" \
-    - packer -c "bash -c 'cd /home/prow/go/src/sigs.k8s.io/image-builder/images/capi && PATH=\$PATH:~packer/.local/bin:/home/prow/go/src/sigs.k8s.io/image-builder/images/capi/.local/bin make deps-gce build-gce-all'"
+  su --whitelist-environment="${ansible_env_whitelist}GCP_PROJECT_ID,PACKER_VAR_FILES,PACKER_FLAGS" \
+    - packer -c "bash -c 'cd /home/prow/go/src/sigs.k8s.io/image-builder/images/capi && PATH=$PATH:~packer/.local/bin:/home/prow/go/src/sigs.k8s.io/image-builder/images/capi/.local/bin make deps-gce build-gce-all'"
 done
 
 echo "Displaying the generated image information"

@@ -84,7 +84,7 @@ ensure_py3_bin() {
   if ! command -v "${1}" >/dev/null 2>&1; then
     echo "User's Python3 binary directory must be in \$PATH" 1>&2
     echo "Location of package is:" 1>&2
-    pip3 show --disable-pip-version-check "${2:-$1}" | grep "Location"
+    pip3 show --disable-pip-version-check ${2:-$1} | grep "Location"
     echo "\$PATH is currently: $PATH" 1>&2
     exit 1
   fi
@@ -117,94 +117,6 @@ pip3_install() {
     >&2 echo "$output"
     exit 1
   fi
-}
-
-ansible_galaxy_collection_install() {
-  local -a galaxy_args=()
-  local xtrace_was_on=false
-  local galaxy_token_path=
-  [[ $- == *x* ]] && xtrace_was_on=true
-  # Galaxy credentials must not be exposed in xtrace output or process
-  # arguments. Keep tracing disabled until all credential handling is done.
-  set +o xtrace
-
-  if [[ -n "${ANSIBLE_GALAXY_SERVER:-}" ]]; then
-    galaxy_args+=(--server "${ANSIBLE_GALAXY_SERVER}")
-  fi
-
-  if [[ -n "${ANSIBLE_GALAXY_TOKEN:-}" ]]; then
-    if ! mkdir -p "${HOME}/.ansible"; then
-      [[ "${xtrace_was_on}" == true ]] && set -o xtrace
-      return 1
-    fi
-    if ! galaxy_token_path="$(umask 077 && mktemp "${HOME}/.ansible/image-builder-galaxy-token-XXXXXX")"; then
-      [[ "${xtrace_was_on}" == true ]] && set -o xtrace
-      return 1
-    fi
-    if ! (
-      umask 077
-      set -o pipefail
-      printf '%s' "${ANSIBLE_GALAXY_TOKEN}" |
-        env -u ANSIBLE_GALAXY_TOKEN python3 -c 'import json, sys; json.dump({"token": sys.stdin.read()}, sys.stdout)' \
-          > "${galaxy_token_path}"
-    ); then
-      rm -f "${galaxy_token_path}"
-      [[ "${xtrace_was_on}" == true ]] && set -o xtrace
-      return 1
-    fi
-  fi
-
-  if [[ "${ANSIBLE_GALAXY_IGNORE_CERTS:-false}" == "true" ]]; then
-    galaxy_args+=(--ignore-certs)
-  fi
-  if [[ -n "${ANSIBLE_GALAXY_TIMEOUT:-}" ]]; then
-    galaxy_args+=(--timeout "${ANSIBLE_GALAXY_TIMEOUT}")
-  fi
-  if [[ -n "${ANSIBLE_GALAXY_COLLECTIONS_PATH:-}" ]]; then
-    galaxy_args+=(--collections-path "${ANSIBLE_GALAXY_COLLECTIONS_PATH}")
-    # ansible-galaxy only reads ANSIBLE_GALAXY_COLLECTIONS_PATH for the
-    # install itself. Ansible discovers collections at runtime via the
-    # standard ANSIBLE_COLLECTIONS_PATH variable, and most provisioner
-    # templates never forward a custom path otherwise, so export it here
-    # too to make the installed collections actually usable later. Make
-    # exports the merged value for later recipes; retain this fallback for
-    # callers that invoke this helper directly.
-    if [[ -n "${ANSIBLE_COLLECTIONS_PATH:-}" ]]; then
-      case ":${ANSIBLE_COLLECTIONS_PATH}:" in
-      *":${ANSIBLE_GALAXY_COLLECTIONS_PATH}:"*) ;;
-      *)
-        export ANSIBLE_COLLECTIONS_PATH="${ANSIBLE_GALAXY_COLLECTIONS_PATH}:${ANSIBLE_COLLECTIONS_PATH}"
-        ;;
-      esac
-    else
-      export ANSIBLE_COLLECTIONS_PATH="${ANSIBLE_GALAXY_COLLECTIONS_PATH}"
-    fi
-  fi
-  if [[ "${ANSIBLE_GALAXY_NO_CACHE:-false}" == "true" ]]; then
-    galaxy_args+=(--no-cache)
-  fi
-  if [[ "${ANSIBLE_GALAXY_OFFLINE:-false}" == "true" ]]; then
-    galaxy_args+=(--offline)
-  fi
-
-  local rc
-  if [[ -n "${galaxy_token_path}" ]]; then
-    if ANSIBLE_GALAXY_TOKEN='' ANSIBLE_GALAXY_TOKEN_PATH="${galaxy_token_path}" \
-      ansible-galaxy collection install ${galaxy_args[@]+"${galaxy_args[@]}"} "$@"; then
-      rc=0
-    else
-      rc=$?
-    fi
-    rm -f "${galaxy_token_path}"
-  else
-    if ansible-galaxy collection install ${galaxy_args[@]+"${galaxy_args[@]}"} "$@"; then
-      rc=0
-    else
-      rc=$?
-    fi
-  fi
-  [[ "${xtrace_was_on}" == true ]] && set -o xtrace
-  return "${rc}"
 }
 
 hostarch_without_darwin_arm64() {

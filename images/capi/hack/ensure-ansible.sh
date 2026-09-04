@@ -46,9 +46,9 @@ EOF
   exit 2
 fi
 
-echo "${ansible_version[*]}"
+echo ${ansible_version[*]}
 
-ansible_galaxy_collection_install \
+ansible-galaxy collection install \
   'community.general:<=12.0.0' \
   'ansible.posix' \
   'ansible.windows:>=1.7.0' \
