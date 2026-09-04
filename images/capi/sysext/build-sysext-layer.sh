@@ -16,6 +16,11 @@
 
 set -euo pipefail
 
+# Filesystem overhead added on top of the payload size, as a percentage of the
+# payload, with a floor in KiB for small layers.
+SYSEXT_OVERHEAD_PERCENT="${SYSEXT_OVERHEAD_PERCENT:-25}"
+SYSEXT_MIN_OVERHEAD_KIB="${SYSEXT_MIN_OVERHEAD_KIB:-16384}"
+
 usage() {
   cat >&2 <<'EOF'
 Usage: build-sysext-layer.sh --name NAME --version VERSION --rootfs DIR --output-dir DIR --os-id ID --os-version VERSION_ID [--arch ARCH]
@@ -104,9 +109,19 @@ fi
 
 mkdir -p "${output_dir}"
 raw="${output_dir}/${raw_basename}.raw"
-size_kib="$(du -sk "${workdir}" | awk '{print $1}')"
-image_size_kib=$((size_kib + 16384))
+payload_kib="$(du -sk "${workdir}" | awk '{print $1}')"
+
+# ext4 needs room for inode tables, block group descriptors, and directory
+# blocks on top of the payload. A fixed margin is not enough for a payload the
+# size of a Kubernetes or containerd release, so scale with the payload and keep
+# a floor for tiny layers. The journal is dropped because sysext images are
+# mounted read-only.
+overhead_kib=$((payload_kib * SYSEXT_OVERHEAD_PERCENT / 100))
+if [ "${overhead_kib}" -lt "${SYSEXT_MIN_OVERHEAD_KIB}" ]; then
+  overhead_kib="${SYSEXT_MIN_OVERHEAD_KIB}"
+fi
+image_size_kib=$((payload_kib + overhead_kib))
 
 rm -f "${raw}"
-mke2fs -q -t ext4 -d "${workdir}" "${raw}" "${image_size_kib}K"
+mke2fs -q -t ext4 -O ^has_journal -d "${workdir}" "${raw}" "${image_size_kib}K"
 echo "${raw}"
