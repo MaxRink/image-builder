@@ -48,6 +48,8 @@
     - systemd_sysext_service_manager == "systemd"
     - systemd_sysext_virtualization_type != "docker"
 
+# Skipped rather than failed when systemd-sysext is absent and
+# systemd_sysext_required is false, since the unit does not exist there.
 - name: Enable systemd-sysext at boot
   ansible.builtin.systemd:
     name: "{{ systemd_sysext_service_name }}"
@@ -57,3 +59,4 @@
     - systemd_sysext_enable_service | bool
     - systemd_sysext_service_manager == "systemd"
     - systemd_sysext_virtualization_type != "docker"
+    - systemd_sysext_version_check.rc | default(1) == 0
