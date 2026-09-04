@@ -15,9 +15,11 @@ directories and `systemd-sysext` availability, and fails if Kubernetes,
 containerd, or CNI payloads are baked into the base image.
 
 For a raw image that preloads sysext images on disk but keeps them inactive,
-pass `systemd_sysext_enable_service=false` through `ansible_user_vars` and keep
-all `.raw` files outside `/etc/extensions`, `/run/extensions`, and
-`/var/lib/extensions`.
+pass `systemd_sysext_enable_service=false` through `ansible_user_vars` and stage
+the `.raw` files under `/opt/extensions/<name>`, which is not a systemd-sysext
+search path. The `systemd_sysext` role creates that staging directory alongside
+the `/etc/extensions` and `/var/lib/extensions` search paths, following the
+layout the `gpu` role already uses for the Flatcar NVIDIA runtime extension.
 
 System extension images are limited to `/usr` and `/opt`. Configuration,
 mutable state, service enablement, kernel/firmware content, and bootloader

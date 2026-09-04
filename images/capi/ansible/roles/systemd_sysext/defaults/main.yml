@@ -13,10 +13,13 @@
 # limitations under the License.
 ---
 systemd_sysext_required: true
+# systemd-sysext search paths that persist in the shipped image. /run/extensions
+# is a systemd search path too, but it lives on tmpfs and cannot be baked in.
 systemd_sysext_directories:
   - /etc/extensions
-  - /run/extensions
   - /var/lib/extensions
-  - /var/lib/sysext-staging
+# Staging area for .raw images that are present on disk but not merged, matching
+# the /opt/extensions/<name> layout the gpu role already uses on Flatcar.
+systemd_sysext_staging_dir: /opt/extensions
 systemd_sysext_service_name: systemd-sysext.service
 systemd_sysext_enable_service: true

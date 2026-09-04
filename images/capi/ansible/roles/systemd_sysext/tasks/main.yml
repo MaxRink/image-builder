@@ -43,7 +43,7 @@
     owner: root
     group: root
     mode: "0755"
-  loop: "{{ systemd_sysext_directories }}"
+  loop: "{{ systemd_sysext_directories + [systemd_sysext_staging_dir] }}"
   when:
     - systemd_sysext_service_manager == "systemd"
     - systemd_sysext_virtualization_type != "docker"
