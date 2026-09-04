@@ -39,6 +39,11 @@ numeric owner 0, or root privileges so the staging copy can be chowned.
 EOF
 }
 
+# Sets normalized_int. Called directly rather than in a command substitution so
+# that a rejection exits the script instead of only a subshell. Values are
+# normalized through base 10 so that a zero-padded number such as 08 is not
+# later treated as invalid octal by arithmetic expansion.
+normalized_int=0
 require_positive_int() {
   local name="$1" value="$2"
   case "${value}" in
@@ -47,15 +52,19 @@ require_positive_int() {
       exit 2
       ;;
   esac
-  if [ "${value}" -le 0 ]; then
+  normalized_int=$((10#${value}))
+  if [ "${normalized_int}" -le 0 ]; then
     echo "${name} must be a positive integer, got: '${value}'" >&2
     exit 2
   fi
 }
 
 require_positive_int SYSEXT_OVERHEAD_PERCENT "${SYSEXT_OVERHEAD_PERCENT}"
+SYSEXT_OVERHEAD_PERCENT="${normalized_int}"
 require_positive_int SYSEXT_MIN_OVERHEAD_KIB "${SYSEXT_MIN_OVERHEAD_KIB}"
+SYSEXT_MIN_OVERHEAD_KIB="${normalized_int}"
 require_positive_int SYSEXT_MIN_INODES "${SYSEXT_MIN_INODES}"
+SYSEXT_MIN_INODES="${normalized_int}"
 
 name=""
 version=""
@@ -128,9 +137,14 @@ workdir="$(mktemp -d)"
 
 # GNU tar and bsdtar spell the numeric owner override differently. Either way the
 # archive records uid 0 and gid 0, so the image does not inherit the build user.
-tar_owner_flags=(--owner=0 --group=0 --numeric-owner)
+# GNU tar also drops extended attributes unless asked for them, and the default
+# include list leaves out the security namespace, which is where file
+# capabilities live. bsdtar carries them without being asked.
+tar_create_flags=(--owner=0 --group=0 --numeric-owner --xattrs --xattrs-include='*')
+tar_extract_flags=(--numeric-owner -p --xattrs --xattrs-include='*')
 if tar --version 2>/dev/null | head -n 1 | grep -qi '^bsdtar'; then
-  tar_owner_flags=(--uid 0 --gid 0 --uname '' --gname '' --numeric-owner)
+  tar_create_flags=(--uid 0 --gid 0 --uname '' --gname '' --numeric-owner)
+  tar_extract_flags=(--numeric-owner -p)
 fi
 
 # mke2fs only accepts a tarball for -d when it was built with libarchive, which
@@ -139,7 +153,7 @@ mke2fs_accepts_tar() {
   local probe="${workdir}/probe"
   mkdir -p "${probe}/src/usr"
   : > "${probe}/src/usr/.probe"
-  tar -cf "${probe}/probe.tar" "${tar_owner_flags[@]}" -C "${probe}/src" . >/dev/null 2>&1 || return 1
+  tar -cf "${probe}/probe.tar" "${tar_create_flags[@]}" -C "${probe}/src" . >/dev/null 2>&1 || return 1
   mke2fs -q -t ext4 -O ^has_journal -d "${probe}/probe.tar" "${probe}/probe.raw" 1024K >/dev/null 2>&1
 }
 
@@ -183,33 +197,42 @@ if [ "${inode_count}" -lt "${SYSEXT_MIN_INODES}" ]; then
   inode_count="${SYSEXT_MIN_INODES}"
 fi
 
+mke2fs_tar_input=0
+if mke2fs_accepts_tar; then
+  mke2fs_tar_input=1
+fi
+
+if [ "${mke2fs_tar_input}" -eq 0 ] && [ "$(id -u)" -ne 0 ]; then
+  echo "Cannot produce a root-owned sysext image here." >&2
+  echo "Install an mke2fs built with libarchive so the payload can be passed as a tar stream, or run this script as root." >&2
+  exit 1
+fi
+
 mkdir -p "${output_dir}"
 raw="${output_dir}/${raw_basename}.raw"
 rm -f "${raw}"
 
-if mke2fs_accepts_tar; then
-  layer_tar="${workdir}/layer.tar"
-  tar_sources=(-C "${rootfs}" .)
-  if [ -n "${release_overlay}" ]; then
-    tar_sources+=(-C "${release_overlay}" .)
-  fi
-  tar -cf "${layer_tar}" "${tar_owner_flags[@]}" "${tar_sources[@]}"
-  mke2fs -q -t ext4 -O ^has_journal -N "${inode_count}" -d "${layer_tar}" "${raw}" "${image_size_kib}K"
-elif [ "$(id -u)" -eq 0 ]; then
-  # mke2fs -d preserves the ownership of the source tree, so the copy has to be
-  # chowned before it is turned into an image.
+# Both paths go through the same archive, so ownership and extended attributes
+# are decided in one place. Extracting as root reproduces what mke2fs would have
+# read straight from the tar, which chowning a copy would not: chown clears file
+# capabilities.
+layer_tar="${workdir}/layer.tar"
+tar_sources=(-C "${rootfs}" .)
+if [ -n "${release_overlay}" ]; then
+  tar_sources+=(-C "${release_overlay}" .)
+fi
+tar -cf "${layer_tar}" "${tar_create_flags[@]}" "${tar_sources[@]}"
+
+# mke2fs up to 1.47.0 announces "Creating regular file <path>" on stdout even
+# with -q, so its stdout is kept off this script's stdout, which carries only
+# the image path.
+if [ "${mke2fs_tar_input}" -eq 1 ]; then
+  mke2fs -q -t ext4 -O ^has_journal -N "${inode_count}" -d "${layer_tar}" "${raw}" "${image_size_kib}K" >&2
+else
   staging="${workdir}/rootfs"
   mkdir -p "${staging}"
-  cp -a "${rootfs}/." "${staging}/"
-  if [ -n "${release_overlay}" ]; then
-    cp -a "${release_overlay}/." "${staging}/"
-  fi
-  chown -R 0:0 "${staging}"
-  mke2fs -q -t ext4 -O ^has_journal -N "${inode_count}" -d "${staging}" "${raw}" "${image_size_kib}K"
-else
-  echo "Cannot produce a root-owned sysext image here." >&2
-  echo "Install an mke2fs built with libarchive so the payload can be passed as a tar stream, or run this script as root." >&2
-  exit 1
+  tar -xf "${layer_tar}" -C "${staging}" "${tar_extract_flags[@]}"
+  mke2fs -q -t ext4 -O ^has_journal -N "${inode_count}" -d "${staging}" "${raw}" "${image_size_kib}K" >&2
 fi
 
 echo "${raw}"

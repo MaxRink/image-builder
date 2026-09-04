@@ -43,11 +43,15 @@ images/capi/sysext/build-sysext-layer.sh \
 
 Image contents are always owned by uid 0 and gid 0, whoever runs the build.
 `mke2fs -d` otherwise preserves the ownership of the source tree, which would
-leave a merged `/usr` owned by the build user. The helper hands the payload to
-`mke2fs` as a tar stream with numeric owner 0 where `mke2fs` was built with
-libarchive (e2fsprogs 1.47.1 and later, and only when that build option is on),
-and falls back to chowning a staging copy when it runs as root. With neither, it
-fails rather than writing an image with the wrong ownership.
+leave a merged `/usr` owned by the build user. The payload is therefore packed
+into a tar archive with numeric owner 0, extended attributes included, and that
+archive is handed to `mke2fs` directly where `mke2fs` was built with libarchive
+(e2fsprogs 1.47.1 and later, and only when that build option is on). Where it
+was not, the same archive is extracted as root and the resulting tree is passed
+to `mke2fs`. Running unprivileged without libarchive support fails rather than
+writing an image with the wrong ownership. Both paths go through one archive so
+that file capabilities and other extended attributes survive; chowning a copy
+would clear them.
 
 Image sizing is derived from the payload. `SYSEXT_OVERHEAD_PERCENT` (default
 `25`) is the block headroom added on top of the payload and the margin on the
