@@ -70,10 +70,20 @@ assert_root_owned_file_in_image() {
   fi
 }
 
+# Payloads are given a non-root owner so that the ownership assertions below
+# still mean something when this runs as root, where every file would otherwise
+# be uid 0 before the helper does anything.
+stage_payload_owner() {
+  if [ "$(id -u)" -eq 0 ]; then
+    chown -R 65534:65534 "$1"
+  fi
+}
+
 # Layer with a regular payload file.
 rootfs="${workdir}/rootfs"
 mkdir -p "${rootfs}/usr/share/sysext-test"
 printf 'ok\n' > "${rootfs}/usr/share/sysext-test/payload"
+stage_payload_owner "${rootfs}"
 
 build_layer \
   --name sysext-test \
@@ -99,6 +109,7 @@ mkdir -p "${many_rootfs}/usr/share/sysext-many"
 for i in $(seq 1 1000); do
   printf 'x' > "${many_rootfs}/usr/share/sysext-many/f${i}"
 done
+stage_payload_owner "${many_rootfs}"
 
 build_layer \
   --name sysext-many \

@@ -62,8 +62,9 @@
       ansible.builtin.include_role:
         name: load_additional_components
       when: load_additional_components | bool
-    # ecr_credential_provider is omitted: it hard-fails on the missing
-    # /etc/default/kubelet, which only the kubernetes role writes.
+    # ecr_credential_provider is omitted: it hard-fails when the kubelet
+    # defaults file is missing, /etc/default/kubelet on Debian and
+    # /etc/sysconfig/kubelet elsewhere, and only the kubernetes role writes it.
     - name: Include post-node custom roles
       ansible.builtin.include_role:
         name: "{{ role }}"
