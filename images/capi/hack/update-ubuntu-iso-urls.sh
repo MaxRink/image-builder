@@ -50,12 +50,6 @@ find_latest_iso() {
         exit 1
     fi
 
-    if [[ "${http_status}" == "404" ]]; then
-        echo "WARNING: ${checksum_url} returned 404; Ubuntu ${series} has no point release yet; skipping ${arch}" >&2
-        touch "${cache_dir}/${cache_key}.skip"
-        return 1
-    fi
-
     if [[ "${http_status}" != "200" ]]; then
         echo "ERROR: ${checksum_url} returned HTTP ${http_status}" >&2
         exit 1

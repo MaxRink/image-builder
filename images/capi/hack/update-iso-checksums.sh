@@ -41,12 +41,20 @@ for file in "${_configs_with_iso_url[@]}"; do
 
     iso_checksum_type=$(jq -r '.iso_checksum_type // "sha256"' "${file}")
     if [[ "${_compute_checksum}" = "true" ]]; then
-        iso_checksum=$(curl -SsL "${iso_url}" | "${iso_checksum_type}"sum | awk '{print $1}')
+        iso_checksum=$(curl -fSsL "${iso_url}" | "${iso_checksum_type}"sum | awk '{print $1}')
     else
         sha256sums_url="$(dirname "${iso_url}")/${_checksum_file}"
         _checksum_search_pattern=${4/iso_file_name/$iso_file_name}
-        iso_checksum=$(curl -SsL "${sha256sums_url}" | grep "${_checksum_search_pattern}" | awk -v col="${_checksum_position}" '{print $col}')
+        iso_checksum=$(curl -fSsL "${sha256sums_url}" | { grep -- "${_checksum_search_pattern}" || true; } | awk -v col="${_checksum_position}" '{print $col}')
     fi
+
+    if [[ -z "${iso_checksum}" ]]; then
+        echo "ERROR: no ${iso_checksum_type} checksum found for ${iso_file_name}" >&2
+        exit 1
+    fi
+
     tmp=$(mktemp)
-    jq --arg iso_checksum "${iso_checksum}" --arg iso_checksum_type "${iso_checksum_type}" '.iso_checksum = $iso_checksum | .iso_checksum_type = $iso_checksum_type' "${file}" > "${tmp}" && mv "${tmp}" "${file}"
+    trap 'rm -f "${tmp}"' EXIT
+    jq --arg iso_checksum "${iso_checksum}" --arg iso_checksum_type "${iso_checksum_type}" '.iso_checksum = $iso_checksum | .iso_checksum_type = $iso_checksum_type' "${file}" > "${tmp}"
+    mv "${tmp}" "${file}"
 done
