@@ -20,6 +20,8 @@
     node_custom_roles_post: ""
     custom_role_names: ""
     sysprep_remove_swapfiles: false
+    # Kubernetes ships as a sysext layer, not as packages, on these targets.
+    sysprep_hold_kubernetes_packages: false
     system: linux
     arch_uname: "{{ ansible_facts['architecture'] }}"
     arch: "{{ {'x86_64': 'amd64', 'amd64': 'amd64', 'aarch64': 'arm64', 'arm64': 'arm64', 'ppc64le': 'ppc64le'}.get(arch_uname, 'unsupported') }}"

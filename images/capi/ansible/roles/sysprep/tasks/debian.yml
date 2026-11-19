@@ -59,7 +59,9 @@
   until: sysprep_apt_mark_hold_kubernetes.rc == 0
   retries: 30
   delay: 10
-  when: kubernetes_source_type == "pkg"
+  when:
+    - kubernetes_source_type == "pkg"
+    - sysprep_hold_kubernetes_packages | default(true) | bool
 
 - name: Remove extra repos
   ansible.builtin.file:

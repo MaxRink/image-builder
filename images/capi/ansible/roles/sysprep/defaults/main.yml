@@ -19,4 +19,5 @@ flatcar_disable_autologin: false
 sysprep_require_grub_file: true
 defer_ssh_cleanup_to_packer: false
 sysprep_remove_swapfiles: true
+sysprep_hold_kubernetes_packages: true
 extra_kernel_boot_params: ""
